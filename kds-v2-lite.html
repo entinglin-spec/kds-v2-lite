@@ -1,0 +1,1605 @@
+<!doctype html>
+<html lang="zh-TW" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KDS 2.0 Lite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Design tokens — Figma: KDS 2.0 (46CVabC5jHfBAZLA0H5W8L, 7:1031)
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  /* Brand */
+  --brand-primary:#58B6A8;
+  --brand-primary-dark:#279684;
+  --brand-secondary:#272A3A;
+  --brand-bg:#F5F8F9;
+  /* Gray */
+  --white:#FFFFFF; --g1:#F4F4F5; --g2:#E4E4E7; --g3:#D4D4D8; --g4:#A1A1AA;
+  /* Text */
+  --t-primary:#3F3F46; --t-secondary:#71717A; --t-disable:#D4D4D8;
+  /* State */
+  --error:#FF8A80; --error-light:#FDEDED;
+  --warning:#FFAB40; --warning-light:#FFF4E5;
+  --info:#5292D9; --info-dark:#014361;
+  /* 服務類型固定色票（PRD §2.2 色塊顯示 / §5.3 不開放客製，深淺模式共用）
+     icon 一律白色，換色票時請留意與白色的對比 */
+  --svc-dinein:#FFAB40;      /* 內用 */
+  --svc-takeout:#5292D9;     /* 外帶 */
+  --svc-delivery:#9A82CE;    /* 外送 */
+  --svc-ubereats:#06C167;    /* Uber Eats 品牌色 */
+  --svc-foodpanda:#D70F64;   /* foodpanda 品牌色 */
+  /* Radius */
+  --r-xs:4px; --r-md:8px; --r-xl:16px; --r-full:9999px;
+  /* Shadow4 */
+  --shadow4:0px 24px 40px rgba(24,24,27,0.1), 0px 0px 1px rgba(24,24,27,0.1);
+  /* Font scale multiplier (settings) */
+  --fs:1;
+}
+
+/* ── Light theme ───────────────────────────────────────────── */
+html[data-theme="light"]{
+  --page:#F5F8F9;
+  --surface:#FFFFFF;
+  --surface-alt:#F4F4F5;
+  --border:#E4E4E7;
+  --pressed:#E4E4E7;
+  --text:#3F3F46;
+  --text-sub:#71717A;
+  --text-disable:#D4D4D8;
+  --overlay:rgba(24,24,27,0.4);
+  --meta-bg:#F5F8F9;
+  --meta-ready-bg:#EAF2FB;
+  --state-ready:#5292D9;
+  --seat:#D0342C;            /* 後結座位紅字 — 由 error #FF8A80 同色相壓暗至白底 AA */
+  --toast-bg:#272A3A;
+  --toast-fg:#FFFFFF;
+  --cta-brand-bg:#58B6A8;
+  --cta-brand-pressed:#279684;
+  --dropdown-item-bg:#E4E4E7;
+  --dropdown-item-border:transparent;
+  --dropdown-item-pressed:#D4D4D8;
+  --menu-shadow:0px 24px 40px rgba(24,24,27,0.18), 0px 0px 1px rgba(24,24,27,0.16);
+  --menu-ring:transparent;
+}
+
+/* ── Dark theme (WCAG AA/AAA tuned) ────────────────────────── */
+html[data-theme="dark"]{
+  --page:#0A0C10;
+  --surface:#1E232E;
+  --surface-alt:#2A2F3B;
+  --border:#404656;
+  --pressed:#525866;
+  --text:#ECEDEE;
+  --text-sub:#B8BCC4;
+  --text-disable:#7A7F8C;
+  --overlay:rgba(0,0,0,0.65);
+  --meta-bg:#2A2F3B;
+  --meta-ready-bg:#16304A;
+  --state-ready:#5292D9;
+  --seat:#FF8A80;            /* 深色模式改用亮紅，對 surface ≈ 7:1 */
+  --toast-bg:#404656;
+  --toast-fg:#FFFFFF;
+  --cta-brand-bg:#279684;
+  --cta-brand-pressed:#155F53;
+  --dropdown-item-bg:#6B7387;
+  --dropdown-item-border:#8089A0;
+  --dropdown-item-pressed:#8089A0;
+  --menu-shadow:0px 16px 40px rgba(0,0,0,0.55), 0px 4px 10px rgba(0,0,0,0.4);
+  --menu-ring:#404656;
+}
+
+/* ═══ Base ═══ */
+*,*::before,*::after{box-sizing:border-box;}
+html{line-height:1.5;-webkit-text-size-adjust:100%;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:'Open Sans','Noto Sans TC',sans-serif;
+  background:var(--page);
+  color:var(--text);
+  overflow:hidden;
+  line-height:inherit;
+}
+button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inherit;margin:0;}
+.icon{display:inline-flex;align-items:center;justify-content:center;}
+.icon svg{display:block;}
+
+/* ═══ Animations (v2.css) ═══ */
+@keyframes v2FadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.94)}}
+@keyframes v2SlideIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes v2ToastIn{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes v2DropdownIn{0%{opacity:0;transform:translateY(-8px) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes v2Blink{0%,49%{opacity:1}50%,100%{opacity:.15}}
+.v2-fade-out{animation:v2FadeOut .35s ease-out forwards;}
+.v2-slide-in{animation:v2SlideIn .25s ease-out;}
+.v2-toast-in{animation:v2ToastIn .25s ease-out;}
+.v2-dropdown-in{animation:v2DropdownIn .18s ease-out;transform-origin:top left;}
+.v2-blink{animation:v2Blink 1s step-start infinite;}
+
+/* ═══ Layout ═══ */
+.app{background:var(--page);height:100vh;display:flex;flex-direction:column;color:var(--text);overflow:hidden;}
+.topbar{height:100px;padding:20px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:24px;flex-shrink:0;}
+.divider-v{width:1px;height:32px;background:var(--border);flex-shrink:0;}
+.body-row{display:flex;flex:1;overflow:hidden;}
+.siderail{width:80px;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.toolbar{display:flex;flex-direction:column;gap:12px;align-items:center;}
+.content{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+
+/* ═══ IconButton (Figma 70:749) ═══ */
+.iconbtn{width:60px;height:60px;padding:12px;border-radius:var(--r-md);border:2px solid var(--border);
+  background:var(--surface-alt);color:var(--text);display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;user-select:none;transition:background .08s linear;}
+.iconbtn:active{background:var(--g2);}
+.iconbtn .icon{width:36px;height:36px;}
+
+/* ═══ ChannelTabs ═══ */
+.tabs{display:flex;gap:12px;align-items:center;}
+.tab{background:var(--surface-alt);color:var(--text);border:2px solid var(--border);border-radius:var(--r-md);
+  height:60px;padding:12px 20px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;
+  user-select:none;transition:background .08s linear;}
+.tab:active{background:var(--g2);}
+.tab.active{background:var(--brand-primary);color:var(--white);border-color:transparent;font-weight:700;}
+.tab .t-label{font-size:24px;font-weight:inherit;}
+.tab .t-count{font-size:20px;font-weight:inherit;}
+
+/* ═══ 搜尋訂單 Dialog（PRD §2.3.1）═══ */
+/* .modal 的 width 在後面定義，故提高一級選擇器權重 */
+.modal.search-dialog{width:840px;max-width:calc(100vw - 48px);}
+.dlg-cols{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;
+  height:var(--dlg-h,560px);}   /* render() 依主畫面卡片高度寫入 --dlg-h */
+.dlg-left{display:flex;flex-direction:column;gap:12px;}
+.dlg-go{margin-top:auto;}
+.dlg-right{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0;overflow-y:auto;}
+.dlg-right .card{flex:1 1 auto;min-height:0;}   /* 填滿右欄，與主畫面卡片等高 */
+.dlg-hint{margin:auto;text-align:center;color:var(--text-sub);font-size:24px;line-height:1.4;padding:0 24px;}
+.dlg-head-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.dlg-title{font-size:24px;font-weight:700;color:var(--text);}
+.dlg-display{background:var(--surface-alt);border:2px solid var(--border);border-radius:var(--r-md);
+  padding:12px 16px;height:76px;flex-shrink:0;display:flex;align-items:center;font-size:32px;font-weight:700;
+  color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:2px;overflow:hidden;}
+/* 注意：修飾詞不可叫 .empty —— 會撞到主畫面空狀態的 .empty{margin:auto} */
+.dlg-display.is-empty{color:var(--text-disable);font-size:20px;font-weight:400;letter-spacing:normal;}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  grid-auto-rows:minmax(0,1fr);flex:1 1 auto;min-height:324px;max-height:420px;}
+.key{border:1px solid var(--dropdown-item-border);border-radius:var(--r-md);
+  background:var(--dropdown-item-bg);color:var(--text);font-size:32px;font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;user-select:none;}
+.key:active{background:var(--dropdown-item-pressed);}
+.key.label{font-size:20px;}
+.dlg-found{color:var(--text-sub);font-size:20px;}
+.dlg-empty{color:var(--text-sub);font-size:24px;text-align:center;padding:40px 0;}
+.result-row{background:var(--page);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
+  display:flex;align-items:center;gap:12px;cursor:pointer;width:100%;text-align:left;font-family:inherit;}
+.result-row:active{background:var(--surface-alt);}
+.result-num{font-size:24px;font-weight:700;color:var(--text);flex:1 0 0;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.result-state{font-size:20px;color:var(--text-sub);white-space:nowrap;flex-shrink:0;}
+.tag-done{background:var(--surface-alt);color:var(--text-sub);font-size:calc(20px * var(--fs));
+  font-weight:700;padding:4px 8px;border-radius:var(--r-md);white-space:nowrap;}
+
+/* ═══ Grid ═══ */
+.grid{flex:1;padding:20px;overflow:hidden;display:grid;gap:20px;
+  grid-template-columns:repeat(var(--cols,4),minmax(0,1fr));grid-template-rows:minmax(0,1fr);}
+.empty{margin:auto;color:var(--text-sub);font-size:24px;font-weight:400;grid-column:1 / -1;}
+
+/* 翻頁列（PRD §2.1 — 超出一屏以按鈕翻頁，不做橫向捲動）*/
+.pager{flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);
+  padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:20px;}
+.pager .page-num{font-size:24px;font-weight:700;color:var(--text);min-width:80px;text-align:center;
+  font-variant-numeric:tabular-nums;}
+.iconbtn:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:var(--border);cursor:not-allowed;}
+
+/* ═══ OrderCard (Figma 32:210) ═══ */
+.card{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-xl);
+  display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+.card.ready{border-color:var(--state-ready);}   /* PRD §3.1 — 待取餐改色 */
+.card-head{border-bottom:2px solid var(--border);border-top-left-radius:14px;border-top-right-radius:14px;
+  padding:12px;display:flex;flex-direction:column;gap:8px;}
+.card-head-row{display:flex;align-items:center;gap:8px;width:100%;justify-content:space-between;}
+.card-title{display:flex;align-items:center;gap:8px;flex:1 0 0;min-width:0;}
+.card-num{color:var(--text);font-size:calc(var(--num-size,32px) * var(--fs));font-weight:700;
+  white-space:nowrap;overflow:hidden;flex:0 1 auto;min-width:0;}
+/* 內容放不下時：先沿既有字級級距縮字，畫面保持靜止；
+   縮到最小仍放不下才捲一次露出結尾，之後停住不再動。 */
+.mq{overflow:hidden;min-width:0;}
+.mq > .mq-track{display:inline-block;white-space:nowrap;}
+.mq.marquee > .mq-track{
+  animation:mqReveal var(--mq-dur,2s) ease-in-out 1.6s 1 forwards;
+  will-change:transform;
+}
+@keyframes mqReveal{
+  from {transform:translateX(0);}
+  to   {transform:translateX(var(--mq-shift,0));}
+}
+@media (prefers-reduced-motion:reduce){
+  .mq.marquee > .mq-track{animation:none;transform:translateX(var(--mq-shift,0));}
+}
+/* 空間不足時桌號先讓位，訂單編號（恆顯示）最後才截斷 */
+.card-table{color:var(--text-sub);font-size:calc(20px * var(--fs));font-weight:400;white-space:nowrap;
+  flex:0 500 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.badges{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.paid-icon{color:#71717A;display:inline-flex;align-items:center;justify-content:center;}
+/* 卡片資訊列：進單時間（左）＋ 預約取餐時間（右，預約單才有）*/
+.card-meta{background:var(--meta-bg);border-radius:var(--r-md);padding:4px 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;}
+.card.ready .card-meta{background:var(--meta-ready-bg);}
+.card-meta .m-time{display:inline-flex;align-items:center;gap:4px;color:var(--text);
+  font-size:calc(20px * var(--fs));font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.card-meta .m-sched{display:inline-flex;align-items:center;gap:4px;color:var(--text);
+  font-size:calc(20px * var(--fs));font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;
+  min-width:0;overflow:hidden;}
+.card-meta .m-sched > .icon{flex-shrink:0;}
+.card-meta .m-sched > .mq{flex:0 1 auto;}
+.card-meta .m-time{flex-shrink:0;}
+.card-items{flex:1 0 0;padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}
+.card-foot{border-top:2px solid var(--border);border-bottom-left-radius:14px;border-bottom-right-radius:14px;
+  padding:12px;display:flex;gap:10px;align-items:stretch;position:relative;}
+
+/* ═══ ChannelTag ═══ */
+.channel-tile{width:40px;height:40px;border-radius:var(--r-md);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.channel-tile.icon-tile{background:var(--svc);color:#FFFFFF;}
+.channel-tile.logo-tile{padding:3px 7px;overflow:hidden;}
+.channel-tile.logo-tile svg{display:block;}
+
+/* ═══ CustomerNote ═══ */
+.note{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
+  display:flex;gap:8px;align-items:flex-start;width:100%;}
+.note .n-icon{color:var(--text);flex-shrink:0;display:inline-flex;}
+.note-body{flex:1 0 0;min-width:0;color:var(--text);font-size:calc(20px * var(--fs));font-weight:400;line-height:1.3;}
+.note-toggle{background:transparent;border:none;padding:0;cursor:pointer;color:var(--text);display:inline-flex;flex-shrink:0;}
+
+/* ═══ OrderItem (Figma 31:141) ═══ */
+.item-wrap{position:relative;}
+.item{background:var(--page);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
+  display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;cursor:pointer;
+  user-select:none;-webkit-user-select:none;}
+.item.is-done{background:var(--surface-alt);text-decoration:line-through;text-decoration-color:var(--text-disable);}
+.item.head{border-bottom-left-radius:0;border-bottom-right-radius:0;}
+.item.tail{border-top-left-radius:0;border-top-right-radius:0;border-top-width:0;}
+.item-bar{width:4px;align-self:stretch;background:var(--g4);border-radius:var(--r-full);flex-shrink:0;}
+.item.is-done .item-bar{background:var(--g3);}
+.item-main{display:flex;flex-direction:column;gap:8px;align-items:flex-start;flex:1 0 0;min-width:0;}
+.item-row{display:flex;gap:8px;align-items:center;width:100%;}
+.item-name{flex:1 0 0;min-width:0;color:var(--text);font-size:calc(24px * var(--fs));font-weight:700;line-height:1.1;}
+.item-seat{color:var(--seat);font-size:calc(20px * var(--fs));font-weight:700;white-space:nowrap;flex-shrink:0;}
+.item.is-done .item-seat{color:var(--text-disable);}
+.item-qty{color:var(--text);font-size:calc(24px * var(--fs));font-weight:700;white-space:nowrap;flex-shrink:0;}
+.item.is-done .item-name,.item.is-done .item-qty{color:var(--text-disable);}
+.item-notes{color:var(--text-sub);font-size:calc(20px * var(--fs));font-weight:400;width:100%;line-height:1.3;}
+.item.is-done .item-notes{color:var(--text-disable);}
+
+/* ═══ Checkbox (Figma 56:1531) ═══ */
+.cbx{width:20px;height:20px;flex-shrink:0;border-radius:var(--r-xs);border:2px solid #71717A;background:transparent;
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.cbx.checked{border:none;background:var(--brand-primary);color:var(--white);}
+.cbx.checked.dim{background:var(--t-disable);}
+
+/* ═══ Button (Figma 7:1286) ═══ */
+.btn{border:none;padding:16px;border-radius:var(--r-md);font-size:calc(24px * var(--fs));font-weight:700;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;user-select:none;}
+.btn.full{flex:1 0 0;}
+.btn.brand{background:var(--cta-brand-bg);color:var(--white);}
+.btn.brand:active{background:var(--cta-brand-pressed);}
+.btn.blue{background:var(--info);color:var(--white);}
+.btn.blue:active{background:var(--info-dark);}
+.btn.gray{background:var(--dropdown-item-bg);color:var(--text);border:1px solid var(--dropdown-item-border);}
+.btn.gray:active{background:var(--dropdown-item-pressed);}
+.btn.square{flex-shrink:0;}
+.btn:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:var(--border);cursor:not-allowed;}
+
+/* ═══ DropdownMenu (Figma 56:2601) ═══ */
+.menu{position:absolute;background:var(--surface);box-shadow:var(--menu-shadow);border:1px solid var(--menu-ring);
+  border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:20px;width:240px;z-index:50;}
+.menu.up{bottom:100%;left:0;margin-bottom:8px;}
+.menu.down{top:calc(100% + 8px);left:0;}
+.menu .btn{width:100%;}
+
+/* ═══ Toast ═══ */
+.toast-layer{position:fixed;right:24px;bottom:24px;display:flex;flex-direction:column;gap:12px;z-index:100;}
+.toast{background:var(--toast-bg);color:var(--toast-fg);padding:14px 20px;border-radius:var(--r-md);
+  box-shadow:var(--shadow4);font-size:20px;font-weight:700;min-width:200px;}
+
+/* ═══ SettingsModal ═══ */
+.modal-overlay{position:fixed;inset:0;background:var(--overlay);z-index:80;display:flex;align-items:center;justify-content:center;}
+.modal{background:var(--surface);border-radius:var(--r-xl);padding:24px;box-shadow:var(--shadow4);width:460px;
+  max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+.modal-title{font-size:24px;font-weight:700;color:var(--text);}
+.field{display:flex;flex-direction:column;gap:8px;font-size:20px;color:var(--text);}
+.field > .f-label{font-weight:700;}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:20px;color:var(--text);}
+.row > .f-label{font-weight:700;}
+.seg{display:flex;background:var(--surface-alt);border-radius:var(--r-md);padding:4px;gap:4px;}
+.seg button{flex:1;padding:8px 12px;border:none;border-radius:var(--r-xs);background:transparent;color:var(--text);
+  font-size:20px;font-weight:400;cursor:pointer;transition:background .12s,color .12s;}
+.seg button.active{background:var(--brand-primary);color:var(--white);font-weight:700;}
+.switch{width:48px;height:28px;border-radius:var(--r-full);border:none;background:var(--g2);position:relative;
+  cursor:pointer;padding:0;transition:background .18s;flex-shrink:0;}
+.switch.on{background:var(--brand-primary);}
+.switch i{position:absolute;top:3px;left:3px;width:22px;height:22px;background:var(--white);border-radius:var(--r-full);
+  box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .18s ease-out;}
+.switch.on i{left:23px;}
+.scalebar{padding:4px 12px 0;}
+.scale-track{position:relative;height:24px;}
+.scale-bg{position:absolute;left:0;right:0;top:50%;height:6px;background:var(--surface-alt);border-radius:var(--r-full);transform:translateY(-50%);}
+.scale-fill{position:absolute;left:0;top:50%;height:6px;background:var(--brand-primary);border-radius:var(--r-full);transform:translateY(-50%);transition:width .18s ease-out;}
+.scale-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;padding:0;border-radius:var(--r-full);
+  border:none;background:var(--border);cursor:pointer;outline:none;transition:width .18s ease-out,height .18s ease-out,background .18s;}
+.scale-dot.filled{background:var(--brand-primary);}
+.scale-dot.active{width:22px;height:22px;border:3px solid var(--brand-primary);background:var(--surface);box-shadow:0 2px 6px rgba(88,182,168,.45);}
+.scale-labels{display:flex;justify-content:space-between;margin-top:14px;}
+.scale-labels button{background:transparent;border:none;padding:2px 6px;cursor:pointer;font-size:13px;color:var(--text-sub);
+  font-weight:400;min-width:60px;text-align:center;transition:color .18s;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.scale-labels button.active{color:var(--brand-primary);font-weight:700;}
+.modal-actions{display:flex;gap:12px;}
+.modal-actions .btn{font-size:20px;padding:14px;}
+.modal.reprint-dialog{width:360px;gap:12px;}
+.reprint-opt{background:var(--page);border:2px solid var(--border);border-radius:var(--r-md);padding:16px;
+  display:flex;align-items:center;gap:12px;width:100%;cursor:pointer;text-align:left;
+  font-family:inherit;font-size:24px;font-weight:700;color:var(--text);}
+.reprint-opt:active{background:var(--surface-alt);}
+.reprint-opt.on{border-color:var(--brand-primary);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast-layer" id="toastLayer"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   KDS 2.0 Lite — single-file, no-build port of the React v2 app.
+   Structure mirrors src/v2/: tokens → i18n → data → utils →
+   components (render fns) → actions → app state/render loop.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────── i18n ───────────────────────── */
+const STR = {
+  zh: {
+    appTitle:'KDS 2.0', tabAll:'全部', tabDineIn:'內用', tabTakeout:'外帶',
+    tabDelivery:'外送', tabUberEats:'Uber Eats', tabFoodpanda:'foodpanda',
+    serve:'出餐', pickedUp:'已取餐', scheduled:'預約', seatPrefix:'座',
+    toastPickedUp:'已取餐', actionCall:'叫號', actionReprint:'補印',
+    customer:'訂購人', phone:'電話', address:'地址', note:'備註', orderNote:'訂單備註',
+    toastCalled:'已叫號', toastReprinted:'已補印',
+    reprintTitle:'補印', reprintKitchen:'廚房單', reprintSticker:'標籤貼紙',
+    confirm:'確認', cancel:'取消', itemMemo:'備註',
+    toastServed:'已出餐', toastServedCalled:'已出餐並叫號',
+    toastUndone:'已復原上一步', toastNoUndo:'沒有可復原的動作', toastRefreshed:'已重新整理',
+    settingsTitle:'設定', fontScale:'字體大小', close:'關閉',
+    noOrders:'暫無訂單',
+    searchTitle:'搜尋訂單', searchHint:'輸入訂單編號或電話號碼',
+    searchIdle:'輸入訂單編號或電話號碼後按「搜尋」', backToList:'返回清單',
+    keyClear:'清除', keySearch:'搜尋',
+    foundN:'找到 {n} 筆', noResult:'查無訂單',
+    stateCooking:'製作中', stateReady:'待取餐', stateDone:'已完成',
+    themeMode:'主題', themeLight:'淺色', themeDark:'深色',
+    densityLabel:'版面密度', mergeItems:'合併相同品項',
+    prevPage:'上一頁', nextPage:'下一頁',
+    sortLabel:'訂單排序', sortAsc:'時間正序', sortDesc:'時間倒序',
+    showOrderInfo:'訂單資訊顯示', notifyNewOrder:'通知提示',
+    sizeSmall:'小', sizeMedium:'中', sizeLarge:'大', sizeXLarge:'特大',
+    paid:'已付款', unpaid:'未付款',
+    showCompletedItems:'顯示已完成品項',
+  },
+  en: {
+    appTitle:'KDS 2.0', tabAll:'All', tabDineIn:'Dine-in', tabTakeout:'Takeout',
+    tabDelivery:'Delivery', tabUberEats:'Uber Eats', tabFoodpanda:'foodpanda',
+    serve:'Serve', pickedUp:'Picked Up', scheduled:'Sched.', seatPrefix:'S',
+    toastPickedUp:'Picked up', actionCall:'Call', actionReprint:'Reprint',
+    customer:'Customer', phone:'Phone', address:'Address', note:'Note', orderNote:'Order note',
+    toastCalled:'Called', toastReprinted:'Reprinted',
+    reprintTitle:'Reprint', reprintKitchen:'Kitchen ticket', reprintSticker:'Label sticker',
+    confirm:'Confirm', cancel:'Cancel', itemMemo:'Note',
+    toastServed:'Served', toastServedCalled:'Served & called',
+    toastUndone:'Undone', toastNoUndo:'Nothing to undo', toastRefreshed:'Refreshed',
+    settingsTitle:'Settings', fontScale:'Font size', close:'Close',
+    noOrders:'No orders',
+    searchTitle:'Search Order', searchHint:'Enter order number or phone',
+    searchIdle:'Enter a number, then press Search', backToList:'Back to list',
+    keyClear:'Clear', keySearch:'Search',
+    foundN:'{n} found', noResult:'No order found',
+    stateCooking:'Cooking', stateReady:'Ready', stateDone:'Completed',
+    themeMode:'Theme', themeLight:'Light', themeDark:'Dark',
+    densityLabel:'Layout density', mergeItems:'Merge duplicate items',
+    prevPage:'Previous page', nextPage:'Next page',
+    sortLabel:'Order sort', sortAsc:'Oldest first', sortDesc:'Newest first',
+    showOrderInfo:'Show order info', notifyNewOrder:'New-order voice alert',
+    sizeSmall:'S', sizeMedium:'M', sizeLarge:'L', sizeXLarge:'XL',
+    paid:'Paid', unpaid:'Unpaid',
+    showCompletedItems:'Show Completed Items',
+  },
+};
+function t(lang, key) {
+  return (STR[lang] && STR[lang][key]) != null ? STR[lang][key] : (STR.zh[key] != null ? STR.zh[key] : key);
+}
+
+/* ───────────────────────── Mock data ─────────────────────────
+   Pre-resolved equivalent of src/data/mockData.js run through the
+   v2 transforms (provider map, forced numbers, paid map,
+   attachedToPrev, forced notes, qty expansion).                       */
+const MIN = 60 * 1000;
+function nextDayNoon() {
+  const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(12, 30, 0, 0); return d.getTime();
+}
+function mkOrders() {
+  const now = Date.now();
+  const raw = [
+    { id:'ord-001', tableNumber:'A3', orderNumber:'#0038', type:'dine-in', source:'pos',
+      startTime: now - 50 * MIN, paid:true, items:[
+        // seat = 後結內用的座位號（PRD §2.2 品項清單 — 品項名稱後方紅字）
+        // notes = 屬性（口味調整／套餐附帶）；memo = 品項備註（PRD §2.2 品項清單）
+        { id:'i1', name:'牛肉麵', qty:1, notes:'不加辣、湯多', memo:'客人趕時間', seat:'1' },
+        { id:'i2', name:'炒青菜', qty:1, notes:'', seat:'1' },
+        { id:'i3', name:'控肉飯', qty:2, notes:'', seat:'2' },
+      ]},
+    { id:'ord-002', tableNumber:'B2', orderNumber:'#0039', type:'dine-in', source:'pos',
+      startTime: now - 13 * MIN, paid:false, items:[
+        { id:'i4', name:'蔥油雞飯', qty:2, notes:'飯量：中' },
+        { id:'i5', name:'紅燒獅子頭', qty:1, notes:'少油', attachedToPrev:true },
+        { id:'i6', name:'老虎蝦', qty:1, notes:'' },
+      ]},
+    { id:'ord-003', tableNumber:'#0040', orderNumber:'#00002904', type:'ubereats', source:'ubereats',
+      startTime: now - 7 * MIN, paid:true,
+      customer:{ name:'陳小明', phone:'0912-345-678', address:'台北市大安區忠孝東路四段100號3樓', note:'不需餐具' },
+      orderNotes:'請盡快送到，有小孩等著吃', items:[
+        { id:'i7', name:'排骨便當', qty:3, notes:'' },
+        { id:'i8', name:'雞腿便當', qty:2, notes:'不要香菜' },
+      ]},
+    { id:'ord-004', tableNumber:'C1', orderNumber:'#0984-jxkr', type:'foodpanda', source:'pos',
+      startTime: now - 4 * MIN, paid:false,
+      customer:{ name:'林美華', phone:'0933-888-123' },
+      orderNotes:'', items:[
+        { id:'i9', name:'珍珠奶茶', qty:2, notes:'少糖去冰' },
+        { id:'i10', name:'烏龍茶', qty:1, notes:'' },
+      ]},
+    { id:'ord-005', tableNumber:'D5', orderNumber:'#0042', type:'takeout', source:'pos',
+      startTime: now - 9 * MIN, paid:true, items:[
+        { id:'j1', name:'牛肉麵', qty:2, notes:'不加辣' },
+        { id:'j2', name:'排骨便當', qty:1, notes:'' },
+        { id:'j3', name:'炒青菜', qty:2, notes:'' },
+        { id:'j4', name:'控肉飯', qty:1, notes:'' },
+        { id:'j5', name:'蔥油雞飯', qty:1, notes:'少油' },
+        { id:'j6', name:'紅燒獅子頭', qty:2, notes:'' },
+        { id:'j7', name:'滷蛋', qty:4, notes:'' },
+        { id:'j8', name:'豆腐湯', qty:3, notes:'不要蔥', memo:'裝小碗' },
+      ]},
+    // 屬性樣式示範（給開發者看的）：
+    //   單層 —— 一個獨立品項帶多行屬性
+    //   雙層 —— 套餐：主品項 ＋ attachedToPrev 的附屬品項（左側直條線）
+    { id:'ord-009', tableNumber:'E1', orderNumber:'#0044', type:'dine-in', source:'pos',
+      startTime: now - 20 * MIN, paid:true, items:[
+        { id:'m1', name:'手打牛肉漢堡', qty:1,
+          notes:['熟度：全熟', '客製化：不加洋蔥, 小辣'] },
+        { id:'m2', name:'手打牛肉漢堡', qty:1,
+          notes:['熟度：全熟', '客製化：不加洋蔥, 小辣'] },
+        { id:'m3', name:'紅茶', qty:1, notes:['客製化：無糖'], attachedToPrev:true },
+      ]},
+    // 外送（店家自送，非外送平台）
+    { id:'ord-008', tableNumber:'#0043', orderNumber:'#0043', type:'delivery', source:'pos',
+      startTime: now - 6 * MIN, paid:false,
+      // 與 #0984-jxkr 同一位客人（同電話）—— 用來 demo 搜尋命中多筆
+      customer:{ name:'林美華', phone:'0933-888-123', address:'台北市松山區八德路三段12號' },
+      orderNotes:'', items:[
+        { id:'k1', name:'控肉飯', qty:2, notes:'' },
+        { id:'k2', name:'豆腐湯', qty:1, notes:'不要蔥' },
+      ]},
+    // 預約訂單（PRD §2.2 / §5.4）—— 已依 Portal 設定提前進單，卡片顯示預約取餐時間
+    { id:'ord-006', tableNumber:'R01', orderNumber:'#0050', type:'dine-in', source:'pos',
+      startTime: now - 2 * MIN, scheduledTime: now + 55 * MIN, paid:true,
+      customer:{ name:'王大明', phone:'0912-111-222' },
+      orderNotes:'生日包廂，請備蠟燭', items:[
+        { id:'r1', name:'牛肉麵', qty:2, notes:'不加辣' },
+        { id:'r2', name:'炒青菜', qty:1, notes:'' },
+        { id:'r3', name:'滷蛋', qty:4, notes:'' },
+      ]},
+    // 非當日預約 —— 需一併顯示日期
+    { id:'ord-007', tableNumber:'#0054', orderNumber:'#0054', type:'ubereats', source:'ubereats',
+      startTime: now - 1 * MIN, scheduledTime: nextDayNoon(), paid:true,
+      customer:{ name:'黃柏翰', phone:'0922-567-890', address:'台北市中山區南京東路二段88號5樓' },
+      orderNotes:'請放門口，不用按門鈴', items:[
+        { id:'r11', name:'牛肉麵', qty:2, notes:'大碗' },
+        { id:'r12', name:'控肉飯', qty:1, notes:'' },
+      ]},
+  ];
+  return raw.map(o => ({ ...o, items: expandQty(o.items, false) }));
+}
+
+// 數量 >1 展開成 N 列 qty 1，讓每一份可獨立追蹤
+function expandQty(items, done) {
+  return items.flatMap(it => {
+    const n = Math.max(1, it.qty || 1);
+    return Array.from({ length: n }, (_, i) => ({
+      ...it,
+      id: i === 0 ? it.id : `${it.id}_${i}`,
+      qty: 1,
+      done: !!done,
+      seat: it.seat || '',
+      attachedToPrev: !!it.attachedToPrev,
+    }));
+  });
+}
+
+// PRD §2.3.1 / §5.1 — 已消單訂單留存 6 小時：不出現在主畫面，只能從「搜尋訂單」查到。
+function mkHistory() {
+  const now = Date.now();
+  return [{
+    id:'ord-h01', tableNumber:'A1', orderNumber:'#0001', type:'takeout', source:'pos',
+    startTime: now - 95 * MIN,
+    completedAt: now - 40 * MIN,   // 40 分鐘前消單，仍在 6 小時留存區間內
+    called: true,
+    paid: true,
+    customer:{ name:'張雅琪', phone:'0988-123-456' },
+    orderNotes:'',
+    items: expandQty([
+      { id:'h1', name:'牛肉麵', qty:1, notes:'不加辣' },
+      { id:'h2', name:'滷蛋',   qty:2, notes:'' },
+    ], true),
+  }];
+}
+
+/* ───────────────────────── Icons ───────────────────────── */
+const ICONS = {
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  cornerUpLeft:'<polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>',
+  refresh:'<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><polyline points="21 3 21 8 16 8"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><polyline points="3 21 3 16 8 16"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  squareMenu:'<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/>',
+  chevronUp:'<polyline points="18 15 12 9 6 15"/>',
+  chevronLeft:'<polyline points="15 18 9 12 15 6"/>',
+  backspace:'<path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/>',
+  chevronRight:'<polyline points="9 18 15 12 9 6"/>',
+  // 純日曆（不內嵌時鐘）—— 與進單時間的圓形時鐘 icon 在 20px 下才分得開
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
+  chevronDown:'<polyline points="6 9 12 15 18 9"/>',
+  ellipsisV:'<circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  utensils:'<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  bike:'<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
+  shoppingBag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+  circleDollarSign:'<circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/>',
+};
+function icon(name, size) {
+  const sw = name === 'check' ? 3 : 2;
+  const span = document.createElement('span');
+  span.className = 'icon';
+  span.innerHTML = '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" ' +
+    'stroke="currentColor" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round">' +
+    ICONS[name] + '</svg>';
+  return span;
+}
+
+/* Brand logos — inlined from public/v2/*.svg */
+const LOGO_UBEREATS = '<svg width="30" height="22" viewBox="0 0 30 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.0714 18.2188C14.0714 16.9813 13.0714 16.0187 11.8571 16.0187C10.5714 16.0187 9.57143 16.9813 9.57143 18.15C9.57143 19.3875 10.5714 20.35 11.7857 20.35C13.0714 20.4187 14.0714 19.4562 14.0714 18.2188ZM15.9286 14.7125V21.7938H14.0714V21.175C13.4286 21.725 12.5714 22 11.6429 22C9.42857 22 7.64286 20.35 7.64286 18.2875C7.64286 16.225 9.42857 14.575 11.6429 14.575C12.5 14.575 13.3571 14.85 14.0714 15.4V14.7812C14.0714 14.7125 15.9286 14.7125 15.9286 14.7125ZM22.2143 20.1437H20.7857C20.3571 20.1437 20.0714 19.9375 20.0714 19.5938V16.2938H22.2143V14.7125H20.0714V12.7188H18.1429V14.7125H16.7143V16.2938H18.1429V20.075C18.1429 21.0375 18.8571 21.7938 20.1429 21.7938H22.2143V20.1437ZM26.5714 21.9313C28.7857 21.9313 30 20.9688 30 19.5938C30 18.6313 29.2857 17.875 27.7143 17.6L26.0714 17.2562C25.1429 17.1187 24.8571 16.9125 24.8571 16.5687C24.8571 16.1562 25.2857 15.8812 26.1429 15.8812C27.0714 15.8812 27.7143 16.0875 27.9286 16.9125H29.7857C29.7143 15.4687 28.5714 14.4375 26.2857 14.4375C24.2857 14.4375 22.9286 15.1937 22.9286 16.7062C22.9286 17.7375 23.7143 18.425 25.3571 18.7687L27.1429 19.1813C27.8571 19.3188 28.0714 19.525 28.0714 19.8C28.0714 20.2125 27.5 20.4875 26.6429 20.4875C25.5714 20.4875 24.9286 20.2812 24.7143 19.4562H22.7857C23 20.9687 24.2143 21.9313 26.5714 21.9313ZM0.0714288 12.1688H7.21429V13.8187H2V16.1562H7.07143V17.7375H2V20.1437H7.14286V21.7938H0V12.1688H0.0714288ZM29.7857 3.85V2.54375H29.2857C28.5 2.54375 27.8571 2.8875 27.5 3.4375V2.54375H26.0714V9.625H27.5714V5.6375C27.5714 4.5375 28.2857 3.85 29.2143 3.85C29.1429 3.85 29.7857 3.85 29.7857 3.85ZM19.2857 5.5C19.5714 4.4 20.4286 3.7125 21.5714 3.7125C22.6429 3.7125 23.5714 4.4 23.7857 5.5H19.2857ZM21.5714 2.54375C19.5 2.54375 17.7857 4.125 17.7857 6.11875C17.7857 8.18125 19.5 9.7625 21.7143 9.7625C23.0714 9.7625 24.1429 9.2125 24.9286 8.25L23.7857 7.5625C23.2143 8.25 22.5 8.59375 21.6429 8.59375C20.4286 8.59375 19.3571 7.76875 19.2143 6.6H25.2143V6.11875C25.2143 4.05625 23.7143 2.54375 21.5714 2.54375ZM13.2143 8.59375C11.8571 8.59375 10.7143 7.49375 10.7143 6.11875C10.7143 4.8125 11.8571 3.7125 13.2857 3.7125C14.6429 3.7125 15.7857 4.8125 15.7857 6.11875C15.7143 7.49375 14.5714 8.59375 13.2143 8.59375ZM9.21429 9.625H10.6429V8.73125C11.3571 9.41875 12.2857 9.7625 13.2857 9.7625C15.4286 9.7625 17.1429 8.1125 17.1429 6.11875C17.1429 4.125 15.4286 2.475 13.2857 2.475C12.2857 2.475 11.3571 2.81875 10.6429 3.50625V0H9.14286V9.625H9.21429ZM4.07143 8.525C5.5 8.525 6.57143 7.49375 6.57143 5.98125V0.0687503H8.07143V9.625H6.57143V8.73125C5.85714 9.41875 4.92857 9.7625 3.85714 9.7625C1.71429 9.7625 0 8.25 0 5.98125V0H1.5V5.9125C1.57143 7.49375 2.64286 8.525 4.07143 8.525Z" fill="black"/></svg>';
+const LOGO_FOODPANDA = '<svg width="28" height="28" viewBox="0 0 28 28.3066" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.67209 0.0026949C4.7894 -0.00499293 4.98809 0.00537843 5.10757 0.0177442C6.49291 0.161202 7.06725 0.67063 7.91182 1.65924C8.00219 1.6121 8.08422 1.57805 8.17759 1.53845C12.2845 -0.202556 15.9035 -0.131552 20.0647 1.64506C20.4507 1.21436 20.8648 0.713892 21.386 0.448553C24.4033 -1.08778 27.6387 1.55672 26.6992 4.82627C26.5492 5.34831 26.0472 6.19256 25.5739 6.4513C27.3818 8.74072 28.2196 12.6747 27.9508 15.5297C27.5957 19.3012 25.8623 22.5284 23.032 25.0037C18.0651 29.1398 11.0576 29.428 5.79281 25.6612C3.32041 23.8812 1.50035 21.339 0.611896 18.4249C0.449617 17.9037 0.287738 17.3863 0.199074 16.8462C-0.376027 13.3425 0.278744 9.38457 2.37437 6.46936C2.34909 6.45068 2.32432 6.43132 2.3001 6.4113C2.12274 6.26436 1.8863 5.97117 1.75096 5.77289C0.585677 4.06539 1.06131 1.65732 2.82933 0.558757C3.44298 0.177448 3.95694 0.06068 4.67209 0.0026949Z" fill="#FEFEFE"/><path d="M4.57288 1.08571C4.63282 1.07959 4.69302 1.0761 4.75329 1.07534C5.75996 1.0641 6.31243 1.52011 6.97808 2.17992C5.72863 2.89885 4.81102 3.66621 3.81824 4.68866C3.52262 4.99454 3.26743 5.27384 3.02672 5.6252C2.635 5.18105 2.2777 4.63198 2.21177 4.03585C2.03745 2.46006 3.08782 1.30623 4.57288 1.08571Z" fill="#D70F64"/><path d="M22.9478 1.08629C22.9728 1.08299 22.9978 1.08053 23.023 1.07893C24.9876 0.944105 26.3579 3.00905 25.5399 4.76931C25.366 5.14355 25.2256 5.30245 24.9532 5.60881C24.8023 5.3662 24.6625 5.22467 24.4685 5.01409C23.7441 4.22634 23.0351 3.55057 22.1599 2.92651C21.8023 2.67151 21.4131 2.43507 21.0458 2.18297L21.0578 2.16694C21.5361 1.52863 22.1628 1.19838 22.9478 1.08629Z" fill="#D70F64"/><path d="M14.0542 19.9326C16.0337 19.9326 17.632 18.5262 17.632 16.7974H10.491C10.491 18.5262 12.0746 19.9326 14.0542 19.9326Z" fill="#D70F64"/><path d="M14.0545 15.9037C14.2745 15.9623 16.5766 15.1859 16.5766 14.1017C16.5766 13.5011 14.7143 13.3839 14.0545 13.3839C13.4093 13.3839 11.5324 13.5011 11.5324 14.1017C11.5324 15.1859 13.8346 15.9623 14.0545 15.9037Z" fill="#D70F64"/><path d="M22.5004 6.82074C21.2394 5.98567 18.4387 5.48756 17.3536 6.93794C17.3536 6.93794 15.9753 8.41763 17.3243 9.95592C18.688 11.4942 19.7291 12.9299 20.037 14.1752C20.3449 15.4205 20.8435 15.9333 21.8552 15.9479C22.867 15.9479 24.8026 14.4096 25.0518 11.9337C25.3011 9.45781 23.7615 7.64116 22.5004 6.82074ZM19.6118 9.98522C19.1865 9.98522 18.8493 9.64826 18.8493 9.2234C18.8493 8.79854 19.2012 8.46158 19.6118 8.46158C20.037 8.46158 20.3743 8.79854 20.3743 9.2234C20.3596 9.63361 20.0223 9.98522 19.6118 9.98522Z" fill="#D70F64"/><path d="M10.7553 6.92305C9.65557 5.48731 6.85489 5.97077 5.60852 6.80584C4.34748 7.64091 2.80784 9.44291 3.05712 11.9188C3.29173 14.3947 5.24194 15.933 6.2537 15.933C7.26546 15.933 7.76401 15.4203 8.07194 14.1603C8.37987 12.915 9.43562 11.4793 10.7846 9.94102C12.1337 8.40273 10.7553 6.92305 10.7553 6.92305ZM8.73179 9.98497C8.30655 9.98497 7.9693 9.64802 7.9693 9.22315C7.9693 8.79829 8.30655 8.46133 8.73179 8.46133C9.15702 8.46133 9.49427 8.79829 9.49427 9.22315C9.47961 9.63337 9.14236 9.98497 8.73179 9.98497Z" fill="#D70F64"/></svg>';
+
+// PRD §2.2 — 服務類型以色塊顯示，固定色票（§5.3 不開放客製）。
+// 色值集中在 :root 的 --svc-* token，要改配色只動那四行即可。
+const CHANNEL_TILE = {
+  'dine-in':  { kind:'icon', icon:'utensils',    color:'var(--svc-dinein)' },
+  takeout:    { kind:'icon', icon:'shoppingBag', color:'var(--svc-takeout)' },
+  delivery:   { kind:'icon', icon:'bike',        color:'var(--svc-delivery)' },
+  ubereats:   { kind:'logo', color:'var(--svc-ubereats)',  svg:LOGO_UBEREATS },
+  foodpanda:  { kind:'logo', color:'var(--svc-foodpanda)', svg:LOGO_FOODPANDA },
+};
+
+/* ───────────────────────── utils/time ─────────────────────────
+   PRD §2.2 — 進單時間 HH:MM，24 小時制。
+   PRD §5.4 — 預約取餐時間，非當日需一併顯示日期。
+   （延遲警示已依附錄 A 移除，故不再有計時色階）                    */
+function pad2(n) { return String(n).padStart(2, '0'); }
+function fmtClock(ts) {
+  const d = new Date(ts);
+  return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+function fmtSchedule(ts) {
+  const d = new Date(ts), now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  return (sameDay ? '' : pad2(d.getMonth() + 1) + '/' + pad2(d.getDate()) + ' ') + fmtClock(ts);
+}
+
+/* ─────────────────── utils/speech（新進單語音提示）─────────────────── */
+const synth = window.speechSynthesis;
+function getVoice(lang) {
+  if (!synth) return null;
+  const voices = synth.getVoices();
+  return voices.find(v => v.lang === lang) || voices.find(v => v.lang.startsWith('zh')) || null;
+}
+function speak(text, lang) {
+  if (!synth) return;
+  lang = lang || 'zh-TW';
+  synth.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = lang; utt.rate = 0.95; utt.pitch = 1;
+  const voice = getVoice(lang);
+  if (voice) utt.voice = voice;
+  synth.speak(utt);
+}
+function announceNewOrder(order, lang) {
+  const table = order.tableNumber
+    ? (lang === 'zh' ? `${order.tableNumber} 桌` : `Table ${order.tableNumber}`)
+    : order.orderNumber;
+  const itemSummary = order.items
+    .map(i => (lang === 'zh' ? `${i.name} ${i.qty} 份` : `${i.name} x${i.qty}`))
+    .join('、');
+  speak(lang === 'zh' ? `新訂單，${table}，${itemSummary}` : `New order, ${table}, ${itemSummary}`,
+        lang === 'zh' ? 'zh-TW' : 'en-US');
+}
+
+/* ───────────────────────── DOM helper ───────────────────────── */
+function h(tag, props) {
+  const el = document.createElement(tag);
+  if (props) {
+    for (const k in props) {
+      const v = props[k];
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k === 'style') el.setAttribute('style', v);
+      else if (k === 'text') el.textContent = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    }
+  }
+  for (let i = 2; i < arguments.length; i++) append(el, arguments[i]);
+  return el;
+}
+function append(el, child) {
+  if (child == null || child === false) return;
+  if (Array.isArray(child)) { child.forEach(c => append(el, c)); return; }
+  el.appendChild(child instanceof Node ? child : document.createTextNode(String(child)));
+}
+
+/* ───────────────────────── App state ───────────────────────── */
+const DEFAULT_SETTINGS = {
+  fontScale: 1,
+  theme: 'light',   // 'light' | 'dark'
+  density: 4,       // PRD §2.1 / §4 — 版面密度 1×4 / 1×5 / 1×6，預設 1×4
+  mergeItems: true,        // PRD §4 — 預設開
+  hideCompletedItems: false,
+  sort: 'asc',             // PRD §4 — 訂單排序，預設時間正序
+  showOrderInfo: true,     // PRD §2.2 / §4 — 訂單資訊顯示開關，預設開
+  notify: false,           // PRD §4 — 通知提示開關，預設關
+};
+
+// PRD §3.1 — 是否連動 CDS 由系統判定，不提供設定（不做成設定項）。
+// 原型用網址 ?cds=0 或 #cds=0 切到「無 CDS」流程（出餐即消單）；
+// 也可在 console 執行 kdsSetCds(false) 即時切換，方便 demo 兩條路徑。
+let HAS_CDS = !/(?:[?#&])cds=0(?:&|$)/.test(location.search + location.hash);
+window.kdsSetCds = (v) => { HAS_CDS = !!v; render(); return HAS_CDS; };
+
+// PRD §2.2 — 後結座位紅字：店家啟用後結內用 ＋ 內用單 ＋ 品項綁定座位。
+// 後結帳支援與否為 PRD §1.3 待確認項，原型用 ?postpay=0 / kdsSetPostpay(false) 關閉。
+let POSTPAY_DINEIN = !/(?:[?#&])postpay=0(?:&|$)/.test(location.search + location.hash);
+window.kdsSetPostpay = (v) => { POSTPAY_DINEIN = !!v; render(); return POSTPAY_DINEIN; };
+
+// PRD §3.4 — 「補印」顯示條件為「需出單機」。原型用 ?printer=0 模擬沒有出單機。
+let HAS_PRINTER = !/(?:[?#&])printer=0(?:&|$)/.test(location.search + location.hash);
+window.kdsSetPrinter = (v) => { HAS_PRINTER = !!v; render(); return HAS_PRINTER; };
+
+const RETENTION_MS = 6 * 60 * 60 * 1000;   // PRD §5.1 — 訂單留存 6 小時
+const UNDO_LIMIT = 5;                      // PRD §2.3 / §3.3 — 回上一步最多 5 步
+const TAP_LOCK_MS = 400;                   // PRD §3.5 #1 — 推進後同品項鎖定
+const SCROLL_SLOP = 10;                    // PRD §3.5 #5 — 移動超過 10px 判為捲動
+
+// Captured once at load, exactly like the React module-level INITIAL_ORDERS,
+// so "refresh" restores the list without resetting the elapsed timers.
+const INITIAL_ORDERS = mkOrders();
+function cloneInitial() {
+  return INITIAL_ORDERS.map(o => ({ ...o, items: o.items.map(i => ({ ...i, done: false })) }));
+}
+const INITIAL_HISTORY = mkHistory();
+function cloneHistory() {
+  return INITIAL_HISTORY.map(o => ({ ...o, items: o.items.map(i => ({ ...i })) }));
+}
+
+const state = {
+  orders: cloneInitial(),
+  history: cloneHistory(),   // 已消單訂單（保留 6 小時，僅供搜尋查詢）
+  undo: [],             // 動作層級復原堆疊，最多 5 步
+  channel: 'all',
+  // 搜尋訂單 Dialog（PRD §2.3.1）
+  search: { open:false, query:'', results:null, selected:null },   // results === null 表示尚未搜尋
+  reprint: { open:false, orderId:null, kitchen:false, sticker:false },
+  settingsOpen: false,
+  // PRD §4 —「點確認才儲存」：設定頁改動先進草稿，按確認才寫回 state.settings
+  draft: null,
+  settings: { ...DEFAULT_SETTINGS },
+  lang: 'zh',
+  page: 0,              // 目前頁碼（翻頁瀏覽）
+  menuOpen: null,       // orderId with an open kebab menu
+  noteCollapsed: {},    // orderId -> true when the customer note is collapsed
+};
+
+let knownOrderIds = new Set(state.orders.map(o => o.id));
+const itemLock = {};           // "orderId::itemId" -> 上次推進時間
+let seenCardIds = new Set();   // suppresses replaying slide-in on every re-render
+
+/* ───────────────────────── Toasts ───────────────────────── */
+const toastLayer = document.getElementById('toastLayer');
+function pushToast(message) {
+  const el = h('div', { class:'toast v2-toast-in', text: message });
+  toastLayer.appendChild(el);
+  setTimeout(() => el.remove(), 2800);
+}
+
+/* ───────────────────────── Actions ───────────────────────── */
+// PRD §4 —「點確認才儲存」：改動只寫進草稿，主畫面不即時套用
+function setSetting(key, value) {
+  if (!state.draft) return;
+  state.draft.settings[key] = value;
+  render();
+}
+function openSettings() {
+  state.draft = { settings: { ...state.settings }, lang: state.lang };
+  state.settingsOpen = true;
+  render();
+}
+function commitSettings() {
+  if (state.draft) {
+    const before = state.settings;
+    state.settings = state.draft.settings;
+    state.lang = state.draft.lang;
+    if (state.settings.density !== before.density || state.settings.sort !== before.sort) state.page = 0;
+  }
+  state.draft = null;
+  state.settingsOpen = false;
+  render();
+}
+function cancelSettings() {
+  state.draft = null;
+  state.settingsOpen = false;
+  render();
+}
+
+function findOrder(id) { return state.orders.find(o => o.id === id); }
+
+/* ── 回上一步（PRD §2.3 / §3.3）─────────────────────────────
+   動作層級的復原堆疊，最多 5 步，涵蓋品項標記、出餐、消單。       */
+function snapshot() {
+  return {
+    orders: JSON.parse(JSON.stringify(state.orders)),
+    history: JSON.parse(JSON.stringify(state.history)),
+  };
+}
+function pushUndo() {
+  state.undo.push(snapshot());
+  if (state.undo.length > UNDO_LIMIT) state.undo.shift();
+}
+function handleUndo() {
+  if (!state.undo.length) { pushToast(t(state.lang, 'toastNoUndo')); return; }
+  const snap = state.undo.pop();
+  state.orders = snap.orders;
+  state.history = snap.history;
+  // 復原不是新進單，不觸發新單提示
+  knownOrderIds = new Set(state.orders.map(o => o.id));
+  pushToast(t(state.lang, 'toastUndone'));
+  render();
+}
+
+/* ── 品項單點標記（PRD §3.3）────────────────────────────────
+   單向推進：未做 → 完成。已完成不可取消，誤點用「回上一步」。     */
+function handleItemDone(orderId, ids) {
+  const order = findOrder(orderId);
+  if (!order) return;
+  const key = orderId + '::' + ids[0];
+  const now = Date.now();
+  if (itemLock[key] && now - itemLock[key] < TAP_LOCK_MS) return;  // §3.5 #1 連點鎖定
+  const targets = order.items.filter(i => ids.indexOf(i.id) !== -1 && !i.done);
+  if (!targets.length) return;                                     // 單向推進
+  itemLock[key] = now;
+  pushUndo();
+  targets.forEach(i => { i.done = true; });
+  render();
+}
+
+/* ── 消單：從畫面移除，轉入訂單查詢（保留 6 小時）── */
+function closeOrder(orderId) {
+  const card = document.querySelector('.card[data-oid="' + orderId + '"]');
+  if (card) card.classList.add('v2-fade-out');
+  setTimeout(() => {
+    const order = findOrder(orderId);
+    if (!order) return;
+    state.history = state.history.filter(o => o.id !== order.id)
+      .concat([{ ...order, completedAt: Date.now(), items: order.items.map(i => ({ ...i })) }]);
+    state.orders = state.orders.filter(o => o.id !== orderId);
+    render();
+  }, 350);
+}
+
+/* ── 出餐（PRD §3.1 / §3.2）────────────────────────────────
+   永遠可按，不因品項狀態 disable，也不改變品項標記。
+   有 CDS：製作中 →〔出餐＋自動叫號〕→ 待取餐
+   無 CDS：製作中 →〔出餐〕→ 直接消單                            */
+function handleServe(orderId) {
+  const order = findOrder(orderId);
+  if (!order || order.called) return;
+  pushUndo();
+  if (HAS_CDS) {
+    order.called = true;
+    pushToast(`${t(state.lang, 'toastServedCalled')} ${order.orderNumber}`);
+    render();
+  } else {
+    pushToast(`${t(state.lang, 'toastServed')} ${order.orderNumber}`);
+    closeOrder(orderId);
+  }
+}
+
+/* ── 已取餐 → 消單（僅有 CDS 時出現）── */
+function handlePickup(orderId) {
+  const order = findOrder(orderId);
+  if (!order) return;
+  pushUndo();
+  pushToast(`${t(state.lang, 'toastPickedUp')} ${order.orderNumber}`);
+  closeOrder(orderId);
+}
+
+/* ── 「⋯」訂單選單（PRD §3.4）── */
+function handleAction(action, order) {
+  state.menuOpen = null;
+  if (action === 'reprint') {
+    // PRD §3.4 — 補印需先以 Dialog 選擇「廚房單／標籤貼紙」
+    state.reprint = { open:true, orderId:order.id, kitchen:false, sticker:false };
+    render();
+    return;
+  }
+  pushToast(`${t(state.lang, 'toastCalled')} ${order.orderNumber}`);
+  render();
+}
+
+// PRD §3.4 — 補印可同時選廚房單與標籤貼紙（複選）
+function doReprint() {
+  const rp = state.reprint;
+  const kinds = [];
+  if (rp.kitchen) kinds.push(t(state.lang, 'reprintKitchen'));
+  if (rp.sticker) kinds.push(t(state.lang, 'reprintSticker'));
+  if (!kinds.length) return;
+  const order = state.orders.concat(state.history).find(o => o.id === rp.orderId);
+  state.reprint = { open:false, orderId:null, kitchen:false, sticker:false };
+  if (order) {
+    const sep = state.lang === 'zh' ? '、' : ' + ';
+    pushToast(`${t(state.lang, 'toastReprinted')}${kinds.join(sep)} ${order.orderNumber}`);
+  }
+  render();
+}
+
+function handleRefresh() {
+  state.orders = cloneInitial();
+  state.history = cloneHistory();
+  state.undo = [];
+  knownOrderIds = new Set(state.orders.map(o => o.id));
+  pushToast(t(state.lang, 'toastRefreshed'));
+  render();
+}
+
+/* 逾 6 小時的已消單訂單自動清除（PRD §5.1 / §2.3.1）*/
+function pruneHistory() {
+  const cutoff = Date.now() - RETENTION_MS;
+  const kept = state.history.filter(o => (o.completedAt || 0) >= cutoff);
+  if (kept.length === state.history.length) return false;
+  state.history = kept;
+  return true;
+}
+
+/* ───────────────────────── Derived ───────────────────────── */
+function channelCounts() {
+  const counts = { all: state.orders.length, 'dine-in':0, takeout:0, delivery:0, ubereats:0, foodpanda:0 };
+  state.orders.forEach(o => { if (counts[o.type] !== undefined) counts[o.type] += 1; });
+  return counts;
+}
+
+// PRD §2.3.1 — 準確搜尋：訂單編號或電話號碼完全相符。
+function matchOrder(o, q) {
+  const norm = (v) => String(v || '').replace(/[#\s-]/g, '').toLowerCase();
+  const digits = (v) => String(v || '').replace(/\D/g, '');
+  const qn = norm(q);
+  if (!qn) return true;
+  return norm(o.orderNumber) === qn
+      // 數字盤打不出平台單號的英文（例：#0984-jxkr），故也比對純數字部分
+      || (/^\d+$/.test(qn) && digits(o.orderNumber) === qn)
+      || digits(o.customer && o.customer.phone) === digits(q);
+}
+
+// PRD §4 — 訂單排序依裝置設定（時間正序／倒序）。
+function sortOrders(list) {
+  const dir = state.settings.sort === 'desc' ? -1 : 1;
+  return list.slice().sort((a, b) => (a.startTime - b.startTime) * dir);
+}
+
+function visibleOrders() {
+  const list = state.channel === 'all'
+    ? state.orders
+    : state.orders.filter(o => o.type === state.channel);
+  return sortOrders(list);
+}
+
+/* PRD §2.3.1 — 準確搜尋，範圍＝畫面上未消單的訂單 ＋ 已消單 6 小時內，
+   不受服務類型篩選影響。訂單編號或電話號碼皆可。                        */
+function searchPool() {
+  const cutoff = Date.now() - RETENTION_MS;
+  return state.orders.concat(state.history.filter(o => (o.completedAt || 0) >= cutoff));
+}
+function runSearch() {
+  const q = state.search.query.trim();
+  if (!q) return;
+  const hits = searchPool().filter(o => matchOrder(o, q));
+  state.search.results = hits;
+  state.search.selected = hits.length === 1 ? hits[0].id : null;
+  bumpSearchIdle();
+  render();
+}
+function orderStateKey(order) {
+  if (order.completedAt) return 'stateDone';
+  return order.called ? 'stateReady' : 'stateCooking';
+}
+
+// 依 attachedToPrev 切群組：長度 1 ＝ 獨立品項，長度 >1 ＝ 套餐（主品項＋附屬品項）
+function mergeKey(it) {
+  return `${it.name}::${attrLines(it).join('|')}::${it.memo || ''}::${it.seat || ''}`;
+}
+function buildGroups(items, merge) {
+  const groups = [];
+  for (const it of items) {
+    if (it.attachedToPrev && groups.length) groups[groups.length - 1].push(it);
+    else groups.push([it]);
+  }
+  if (!merge) return groups;
+
+  // PRD §1.5 — 同一張訂單內「品項＋屬性完全相同」的多筆合併為一列、數量加總。
+  // 套餐（帶附屬品項）不參與合併；合併結果留在第一次出現的位置。
+  const at = new Map();
+  const out = [];
+  for (const g of groups) {
+    if (g.length > 1) { out.push(g); continue; }
+    const it = g[0];
+    const key = mergeKey(it);
+    if (at.has(key)) {
+      const cur = out[at.get(key)][0];
+      cur.qty += it.qty;
+      cur.done = cur.done && it.done;        // 全部完成才算完成
+      cur._members.push(it.id);
+    } else {
+      at.set(key, out.length);
+      out.push([{ ...it, _members: [it.id] }]);
+    }
+  }
+  return out;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Components
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── IconButton / ToolBar (Figma 70:741) ── */
+function iconButton(name, title, onClick) {
+  return h('button', { class:'iconbtn', title, onclick:onClick }, icon(name, 36));
+}
+function renderSideRail() {
+  return h('div', { class:'siderail' },
+    h('div', { class:'toolbar' },
+      iconButton('settings', 'Settings', openSettings),
+      iconButton('search', 'Search', openSearch),
+      iconButton('cornerUpLeft', 'Undo last complete', handleUndo),
+      iconButton('refresh', 'Refresh', handleRefresh)));
+}
+
+/* ── ChannelTabs ── */
+const TABS = [
+  { key:'all',       labelKey:'tabAll' },
+  { key:'dine-in',   labelKey:'tabDineIn' },
+  { key:'takeout',   labelKey:'tabTakeout' },
+  { key:'delivery',  labelKey:'tabDelivery' },
+  { key:'ubereats',  labelKey:'tabUberEats' },
+  { key:'foodpanda', labelKey:'tabFoodpanda' },
+];
+function renderChannelTabs() {
+  const counts = channelCounts();
+  return h('div', { class:'tabs' },
+    TABS.map(tab => h('button', {
+        class:'tab' + (state.channel === tab.key ? ' active' : ''),
+        onclick:() => { state.channel = tab.key; state.page = 0; render(); },
+      },
+      h('span', { class:'t-label', text:t(state.lang, tab.labelKey) }),
+      h('span', { class:'t-count', text:'(' + (counts[tab.key] || 0) + ')' }))));
+}
+
+/* ── TopBar ── */
+function renderTopBar() {
+  return h('div', { class:'topbar' }, renderChannelTabs());
+}
+
+/* ── ChannelTag (Figma 7:1331 / 32:284 / 49:1125) ── */
+function renderChannelTag(type) {
+  const meta = CHANNEL_TILE[type] || CHANNEL_TILE['dine-in'];
+  if (meta.kind === 'logo') {
+    const el = h('div', { class:'channel-tile logo-tile', style:'background:' + meta.color });
+    el.innerHTML = meta.svg;
+    return el;
+  }
+  return h('div', { class:'channel-tile icon-tile', style:'--svc:' + meta.color }, icon(meta.icon, 28));
+}
+
+/* ── Checkbox (Figma 56:1531) ── */
+function renderCheckbox(checked, dimmed, onToggle) {
+  const el = h('button', {
+    class:'cbx' + (checked ? ' checked' : '') + (checked && dimmed ? ' dim' : ''),
+    role:'checkbox', 'aria-checked':String(checked),
+    onclick:(e) => { e.stopPropagation(); onToggle(); },
+    onmousedown:(e) => e.stopPropagation(),
+  }, checked ? icon('check', 12) : null);
+  return el;
+}
+
+/* ── CustomerNote (Figma I32:210;49:1435) ── */
+function renderCustomerNote(order) {
+  // PRD §2.2 / §4 — 由裝置設定「訂單資訊顯示開關」控制（品項備註不受影響）
+  if (!state.settings.showOrderInfo) return null;
+  const c = order.customer;
+  const lines = [];
+  if (c) {
+    lines.push({ key:'customer', label:t(state.lang, 'customer'), value:c.name });
+    if (c.phone) lines.push({ key:'phone', label:t(state.lang, 'phone'), value:c.phone });
+    if ((order.type === 'ubereats' || order.type === 'foodpanda' || order.type === 'delivery') && c.address) {
+      lines.push({ key:'address', label:t(state.lang, 'address'), value:c.address });
+    }
+    if (c.note) lines.push({ key:'note', label:t(state.lang, 'note'), value:c.note });
+  }
+  if (order.orderNotes) lines.push({ key:'ordernote', label:t(state.lang, 'orderNote'), value:order.orderNotes });
+  if (!lines.length) return null;
+
+  const collapsible = lines.length > 2;
+  const open = !state.noteCollapsed[order.id];       // default: expanded
+  const visible = collapsible && !open ? lines.slice(0, 2) : lines;
+
+  return h('div', { class:'note' },
+    h('span', { class:'n-icon' }, icon('squareMenu', 24)),
+    h('div', { class:'note-body' },
+      visible.map((line, i) => {
+        const truncated = collapsible && !open && i === visible.length - 1;
+        return h('div', { text: line.label + '：' + line.value + (truncated ? '...' : '') });
+      })),
+    collapsible ? h('button', {
+      class:'note-toggle', 'aria-label':'toggle', 'aria-expanded':String(open),
+      onclick:() => { state.noteCollapsed[order.id] = open; render(); },
+    }, icon(open ? 'chevronUp' : 'chevronDown', 24)) : null);
+}
+
+/* ── 點擊判定（PRD §3.5 #5）────────────────────────────────
+   卡片內垂直捲動時，手指移動超過 10px 即判為捲動，放開不觸發點擊。
+   PRD §3.3：長按選單第一階段不做，故不再綁長按。                  */
+function attachTap(el, onTap) {
+  let sx = 0, sy = 0, moved = false, down = false;
+  const pt = (e) => (e.touches && e.touches[0]) || e;
+  const start = (e) => { const p = pt(e); sx = p.clientX; sy = p.clientY; moved = false; down = true; };
+  const move = (e) => {
+    if (!down) return;
+    const p = pt(e);
+    if (Math.abs(p.clientX - sx) > SCROLL_SLOP || Math.abs(p.clientY - sy) > SCROLL_SLOP) moved = true;
+  };
+  const end = () => { down = false; };
+  el.addEventListener('mousedown', start);
+  el.addEventListener('mousemove', move);
+  el.addEventListener('mouseup', end);
+  el.addEventListener('touchstart', start, { passive:true });
+  el.addEventListener('touchmove', move, { passive:true });
+  el.addEventListener('touchend', end, { passive:true });
+  el.addEventListener('touchcancel', end, { passive:true });
+  el.addEventListener('click', () => { if (moved) { moved = false; return; } onTap(); });
+}
+
+// 屬性正規化：字串 → 單行；陣列 → 多行
+function attrLines(item) {
+  if (Array.isArray(item.notes)) return item.notes.filter(Boolean);
+  return item.notes ? [item.notes] : [];
+}
+
+/* ── OrderItem (Figma 31:141) ── */
+function renderOrderItem(order, item, position, opts) {
+  const done = !!item.done;
+  if (done && opts.hideCompletedItems) return null;
+
+  const ids = item._members || [item.id];
+
+  // 單向推進：未做 → 完成；已完成點擊無作用（誤點用「回上一步」）
+  const mark = () => { if (!opts.readonly && !done) handleItemDone(order.id, ids); };
+
+  const row = h('div', {
+    class:'item' + (done ? ' is-done' : '') + (position === 'head' ? ' head' : position === 'tail' ? ' tail' : ''),
+    role:'button', tabindex:'0',
+    onkeydown:(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mark(); } },
+  },
+    position === 'tail' ? h('span', { class:'item-bar', 'aria-hidden':'true' }) : null,
+    h('div', { class:'item-main' },
+      h('div', { class:'item-row' },
+        renderCheckbox(done, done, mark),
+        h('span', { class:'item-name', text:item.name }),
+        // PRD §2.2 — 後結內用 ＋ 內用單 ＋ 品項綁定座位 → 名稱後方紅字座位號
+        (POSTPAY_DINEIN && order.type === 'dine-in' && item.seat)
+          ? h('span', { class:'item-seat', text:t(state.lang, 'seatPrefix') + item.seat })
+          : null,
+        h('span', { class:'item-qty', text:'×' + item.qty })),
+      // PRD §2.2 — 品項名稱 ＋ 屬性 ＋ 數量 ＋ 品項備註；備註恆顯示，不受訂單資訊開關影響
+      // 屬性可為單行字串或多行陣列（例：['熟度：全熟', '客製化：不加洋蔥, 小辣']）
+      attrLines(item).map(line => h('div', { class:'item-notes', text:line })),
+      item.memo ? h('div', { class:'item-notes', text:t(state.lang, 'itemMemo') + '：' + item.memo }) : null));
+
+  attachTap(row, mark);
+
+  return h('div', { class:'item-wrap' }, row);
+}
+
+/* ── DropdownMenu (Figma 56:2601) ── */
+function renderDropdownMenu(order) {
+  // PRD §3.4：補印（需出單機）、叫號（有連動 CDS）。異常通知本版不做。
+  const actions = [];
+  if (HAS_PRINTER) actions.push({ key:'reprint', labelKey:'actionReprint' });  // 需出單機
+  if (HAS_CDS) actions.push({ key:'call', labelKey:'actionCall' });            // 有連動 CDS
+  if (!actions.length) return null;
+  return h('div', { class:'menu up v2-dropdown-in' },
+    actions.map(a => h('button', { class:'btn gray', text:t(state.lang, a.labelKey),
+      onclick:() => handleAction(a.key, order) })));
+}
+
+/* ── OrderCard (Figma 32:210) ── */
+function renderOrderCard(order, opts) {
+  opts = opts || {};
+  const s = state.settings;
+  const paid = order.paid !== false;
+  const closed = !!order.completedAt;          // 已消單
+  const ready = !!order.called && !closed;     // 待取餐（已消單就不再套用待取餐配色）
+  const inSearch = !!opts.search;
+  const itemOpts = {
+    hideCompletedItems: inSearch ? false : s.hideCompletedItems,
+    readonly: inSearch,
+  };
+
+  const groups = buildGroups(order.items, s.mergeItems);
+
+  const card = h('div', {
+      class:'card' + (ready ? ' ready' : '') + (seenCardIds.has(order.id) ? '' : ' v2-slide-in'),
+      'data-oid':order.id,
+    },
+    /* Header */
+    h('div', { class:'card-head' },
+      h('div', { class:'card-head-row' },
+        h('div', { class:'card-title' },
+          renderChannelTag(order.type),
+          h('span', { class:'card-num mq' },
+            h('span', { class:'mq-track', text:order.orderNumber })),
+          order.type === 'dine-in' && order.tableNumber
+            ? h('span', { class:'card-table', text:order.tableNumber + (state.lang === 'zh' ? '桌' : '') })
+            : null),
+        h('div', { class:'badges' },
+          // PRD §2.3.1 — 已消單的訂單於卡片上加「已完成」標示
+          (inSearch && closed) ? h('span', { class:'tag-done', text:t(state.lang, 'stateDone') }) : null,
+          paid ? h('span', { class:'paid-icon', title:t(state.lang, 'paid') }, icon('circleDollarSign', 32)) : null)),
+      // PRD §2.2 — 進單時間 HH:MM 恆顯示；預約單一併顯示預約取餐日期／時間
+      h('div', { class:'card-meta' },
+        h('span', { class:'m-time' }, icon('clock', 20), fmtClock(order.startTime)),
+        order.scheduledTime
+          ? h('span', { class:'m-sched', title:t(state.lang, 'scheduled') },
+              icon('calendar', 20),
+              h('span', { class:'mq' },
+                h('span', { class:'mq-track',
+                  text:t(state.lang, 'scheduled') + ' ' + fmtSchedule(order.scheduledTime) })))
+          : null)),
+
+    /* Item list */
+    h('div', { class:'card-items' },
+      renderCustomerNote(order),
+      groups.map((g, gi) => {
+        if (g.length === 1) return renderOrderItem(order, g[0], 'single', itemOpts);
+        return h('div', { style:'display:flex;flex-direction:column' },
+          g.map((it, idx) => renderOrderItem(order, it, idx === 0 ? 'head' : 'tail', itemOpts)));
+      })),
+
+    /* Footer */
+    h('div', { class:'card-foot' },
+      // PRD §2.3.1 — 搜尋結果卡片除底部 CTA 外全部不可操作，「⋯」選單停用
+      h('button', { class:'btn gray square', 'aria-label':'actions', disabled: inSearch,
+        onclick: inSearch ? null
+          : () => { state.menuOpen = state.menuOpen === order.id ? null : order.id; render(); } },
+        icon('ellipsisV', 24)),
+      (!inSearch && state.menuOpen === order.id) ? renderDropdownMenu(order) : null,
+      // PRD §3.2 — CTA 永遠可按，不因品項狀態 disable
+      // PRD §5.1.6 — 搜尋結果：製作中→出餐、待取餐→已取餐、已完成→停用
+      h('button', {
+        class:'btn full ' + (closed ? 'gray' : ready ? 'blue' : 'brand'),
+        text:t(state.lang, closed ? 'stateDone' : ready ? 'pickedUp' : 'serve'),
+        disabled: closed,
+        onclick: closed ? null : () => {
+          if (inSearch) closeSearch();
+          if (ready) handlePickup(order.id); else handleServe(order.id);
+        },
+      })));
+
+  seenCardIds.add(order.id);
+  return card;
+}
+
+/* ── SettingsModal bits ── */
+function segControl(options, value, onChange) {
+  return h('div', { class:'seg' },
+    options.map(opt => h('button', {
+      class: opt.value === value ? 'active' : '',
+      text: opt.label,
+      onclick: () => onChange(opt.value),
+    })));
+}
+function toggleSwitch(checked, onChange) {
+  return h('button', {
+    class:'switch' + (checked ? ' on' : ''), role:'switch', 'aria-checked':String(checked),
+    onclick:() => onChange(!checked),
+  }, h('i'));
+}
+function scaleStepBar(steps, labels, value, onChange) {
+  let activeIdx = 0;
+  steps.forEach((s, i) => {
+    if (Math.abs(s - value) < Math.abs(steps[activeIdx] - value)) activeIdx = i;
+  });
+  const fillPct = (activeIdx / (steps.length - 1)) * 100;
+  return h('div', { class:'scalebar' },
+    h('div', { class:'scale-track' },
+      h('div', { class:'scale-bg' }),
+      h('div', { class:'scale-fill', style:'width:' + fillPct + '%' }),
+      steps.map((s, i) => h('button', {
+        class:'scale-dot' + (i === activeIdx ? ' active' : i < activeIdx ? ' filled' : ''),
+        style:'left:' + ((i / (steps.length - 1)) * 100) + '%',
+        'aria-label': s + 'x',
+        onclick:() => onChange(s),
+      }))),
+    h('div', { class:'scale-labels' },
+      steps.map((s, i) => h('button', {
+        class: i === activeIdx ? 'active' : '',
+        text: labels[i],
+        onclick:() => onChange(s),
+      }))));
+}
+function renderSettingsModal() {
+  if (!state.settingsOpen || !state.draft) return null;
+  const s = state.draft.settings;
+  const lang = state.draft.lang;      // 設定頁自身即時反映草稿語言
+  const field = (label, control) =>
+    h('label', { class:'field' }, h('span', { class:'f-label', text:label }), control);
+  const row = (label, control) =>
+    h('div', { class:'row' }, h('span', { class:'f-label', text:label }), control);
+
+  return h('div', { class:'modal-overlay', onclick: cancelSettings },
+    h('div', { class:'modal', onclick:(e) => e.stopPropagation() },
+      h('div', { class:'modal-title', text:t(lang, 'settingsTitle') }),
+
+      field('Language / 語言', segControl(
+        [{ value:'zh', label:'繁體中文' }, { value:'en', label:'English' }],
+        lang, v => { state.draft.lang = v; render(); })),
+
+      field(t(lang, 'themeMode'), segControl(
+        [{ value:'light', label:t(lang, 'themeLight') },
+         { value:'dark',  label:t(lang, 'themeDark') }],
+        s.theme, v => setSetting('theme', v))),
+
+      field(t(lang, 'densityLabel'), segControl(
+        [{ value:4, label:'1×4' }, { value:5, label:'1×5' }, { value:6, label:'1×6' }],
+        s.density, v => setSetting('density', v))),
+
+      field(t(lang, 'sortLabel'), segControl(
+        [{ value:'asc',  label:t(lang, 'sortAsc') },
+         { value:'desc', label:t(lang, 'sortDesc') }],
+        s.sort, v => setSetting('sort', v))),
+
+      row(t(lang, 'mergeItems'),
+        toggleSwitch(!!s.mergeItems, v => setSetting('mergeItems', v))),
+
+      row(t(lang, 'showOrderInfo'),
+        toggleSwitch(!!s.showOrderInfo, v => setSetting('showOrderInfo', v))),
+
+      row(t(lang, 'notifyNewOrder'),
+        toggleSwitch(!!s.notify, v => setSetting('notify', v))),
+
+      row(t(lang, 'showCompletedItems'),
+        toggleSwitch(!s.hideCompletedItems, v => setSetting('hideCompletedItems', !v))),
+
+      field(t(lang, 'fontScale'), scaleStepBar(
+        [0.8, 1.0, 1.2, 1.4],
+        [t(lang,'sizeSmall'), t(lang,'sizeMedium'), t(lang,'sizeLarge'), t(lang,'sizeXLarge')],
+        s.fontScale, v => setSetting('fontScale', v))),
+
+      // PRD §4 — 點「確認」才儲存
+      h('div', { class:'modal-actions' },
+        h('button', { class:'btn gray', style:'flex:1', text:t(lang, 'cancel'), onclick: cancelSettings }),
+        h('button', { class:'btn brand', style:'flex:1', text:t(lang, 'confirm'), onclick: commitSettings }))));
+}
+
+/* ── 補印 Dialog（PRD §3.4）── */
+function renderReprintDialog() {
+  const rp = state.reprint;
+  if (!rp.open) return null;
+  const close = () => { state.reprint = { open:false, orderId:null, kitchen:false, sticker:false }; render(); };
+  const opt = (key, labelKey) => {
+    const on = !!rp[key];
+    const toggle = () => { rp[key] = !rp[key]; render(); };
+    return h('button', { class:'reprint-opt' + (on ? ' on' : ''), onclick: toggle },
+      renderCheckbox(on, false, toggle),
+      h('span', { text:t(state.lang, labelKey) }));
+  };
+  return h('div', { class:'modal-overlay', onclick: close },
+    h('div', { class:'modal reprint-dialog', onclick:(e) => e.stopPropagation() },
+      h('div', { class:'modal-title', text:t(state.lang, 'reprintTitle') }),
+      opt('kitchen', 'reprintKitchen'),
+      opt('sticker', 'reprintSticker'),
+      h('div', { class:'modal-actions' },
+        h('button', { class:'btn gray', style:'flex:1', text:t(state.lang, 'cancel'), onclick: close }),
+        h('button', { class:'btn brand', style:'flex:1', text:t(state.lang, 'confirm'),
+          disabled: !rp.kitchen && !rp.sticker, onclick: doReprint }))));
+}
+
+/* ── Grid + 翻頁（PRD §2.1）──────────────────────────────────
+   版面固定單列，每屏 N 張（版面密度 1×4 / 1×5 / 1×6）。
+   超出一屏改以按鈕翻頁，不做橫向捲動。                            */
+function currentList() { return visibleOrders(); }
+function pageSize() {
+  const d = state.settings.density;
+  return (d === 5 || d === 6) ? d : 4;
+}
+function pageCount(list) {
+  return Math.max(1, Math.ceil(list.length / pageSize()));
+}
+
+function renderGrid() {
+  const cols = pageSize();
+  // 版面密度越高卡片越窄，訂單編號字級沿既有級距（lg 32 → sm 24）降一階
+  const grid = h('div', { class:'grid',
+    style:'--cols:' + cols + ';--num-size:' + (cols >= 5 ? '24px' : '32px') });
+  const list = currentList();
+
+  if (!list.length) {
+    append(grid, h('div', { class:'empty', text:t(state.lang, 'noOrders') }));
+    return grid;
+  }
+  const start = state.page * cols;
+  list.slice(start, start + cols).forEach(order => append(grid, renderOrderCard(order)));
+  return grid;
+}
+
+function renderPager() {
+  const list = currentList();
+  const pages = pageCount(list);
+  if (pages <= 1) return null;                 // 未超出一屏就不出現
+  const go = (d) => { state.page = Math.min(pages - 1, Math.max(0, state.page + d)); render(); };
+  return h('div', { class:'pager' },
+    h('button', { class:'iconbtn', title:t(state.lang, 'prevPage'),
+      disabled: state.page === 0, onclick:() => go(-1) }, icon('chevronLeft', 36)),
+    h('span', { class:'page-num', text:(state.page + 1) + ' / ' + pages }),
+    h('button', { class:'iconbtn', title:t(state.lang, 'nextPage'),
+      disabled: state.page >= pages - 1, onclick:() => go(1) }, icon('chevronRight', 36)));
+}
+
+/* ── 搜尋訂單 Dialog（PRD §2.3.1）────────────────────────────
+   以檢視為主，唯一可執行的動作是卡片底部 CTA。
+   關閉：「關閉」鈕或無操作 60 秒；點遮罩不關閉，避免誤觸。        */
+let searchIdleTimer = null;
+function bumpSearchIdle() {
+  clearTimeout(searchIdleTimer);
+  if (!state.search.open) return;
+  searchIdleTimer = setTimeout(() => { closeSearch(); render(); }, 60 * 1000);
+}
+function openSearch() {
+  state.search = { open:true, query:'', results:null, selected:null };
+  state.menuOpen = null;
+  bumpSearchIdle();
+  render();
+}
+function closeSearch() {
+  clearTimeout(searchIdleTimer);
+  state.search.open = false;
+}
+function keyPress(k) {
+  const sc = state.search;
+  if (k === 'back') sc.query = sc.query.slice(0, -1);
+  else if (k === 'clear') sc.query = '';
+  else if (sc.query.length < 16) sc.query += k;
+  bumpSearchIdle();
+  render();
+}
+
+function renderSearchDialog() {
+  const sc = state.search;
+  if (!sc.open) return null;
+  return h('div', { class:'modal-overlay' },          // 無 onclick → 點遮罩不關閉
+    h('div', { class:'modal search-dialog' },
+      h('div', { class:'dlg-head' },
+        h('span', { class:'dlg-title', text:t(state.lang, 'searchTitle') }),
+        h('div', { class:'dlg-head-actions' },
+          (sc.selected && sc.results && sc.results.length > 1)
+            ? h('button', { class:'btn gray', style:'padding:12px 20px;font-size:20px',
+                onclick:() => { sc.selected = null; bumpSearchIdle(); render(); } },
+                icon('chevronLeft', 20), t(state.lang, 'backToList'))
+            : null,
+          h('button', { class:'btn gray', style:'padding:12px 20px', text:t(state.lang, 'close'),
+            onclick:() => { closeSearch(); render(); } }))),
+      h('div', { class:'dlg-cols' },
+        h('div', { class:'dlg-left' }, renderSearchInput()),
+        h('div', { class:'dlg-right' }, renderSearchResult()))));
+}
+
+/* 左欄：大按鍵數字盤 —— 常駐，重新搜尋不必先返回 */
+function renderSearchInput() {
+  const sc = state.search;
+  return [
+    h('div', { class:'dlg-display' + (sc.query ? '' : ' is-empty'),
+      text: sc.query || t(state.lang, 'searchHint') }),
+    h('div', { class:'keypad' },
+      ['1','2','3','4','5','6','7','8','9'].map(k =>
+        h('button', { class:'key', text:k, onclick:() => keyPress(k) })),
+      h('button', { class:'key label', text:t(state.lang, 'keyClear'), onclick:() => keyPress('clear') }),
+      h('button', { class:'key', text:'0', onclick:() => keyPress('0') }),
+      h('button', { class:'key', 'aria-label':'backspace', onclick:() => keyPress('back') },
+        icon('backspace', 32))),
+    h('button', { class:'btn brand dlg-go', style:'width:100%', text:t(state.lang, 'keySearch'),
+      disabled: !sc.query, onclick: runSearch }),
+  ];
+}
+
+/* 右欄：結果（尚未搜尋／查無訂單／單筆卡片／多筆清單）*/
+function renderSearchResult() {
+  const sc = state.search;
+  if (sc.results === null) {
+    return h('div', { class:'dlg-hint', text:t(state.lang, 'searchIdle') });
+  }
+  if (!sc.results.length) {
+    return h('div', { class:'dlg-hint', text:t(state.lang, 'noResult') });
+  }
+  const selected = sc.selected && sc.results.find(o => o.id === sc.selected);
+  if (selected) return renderOrderCard(selected, { search:true });
+  return [
+    h('div', { class:'dlg-found', text:t(state.lang, 'foundN').replace('{n}', sc.results.length) }),
+    sc.results.map(o => h('button', { class:'result-row',
+        onclick:() => { sc.selected = o.id; bumpSearchIdle(); render(); } },
+      renderChannelTag(o.type),
+      h('span', { class:'result-num', text:o.orderNumber }),
+      h('span', { class:'result-state', text:t(state.lang, orderStateKey(o)) }))),
+  ];
+}
+
+function renderApp() {
+  return h('div', { class:'app' },
+    renderTopBar(),
+    h('div', { class:'body-row' },
+      renderSideRail(),
+      h('div', { class:'content' },
+        renderGrid(),
+        renderPager())),
+    renderSearchDialog(),
+    renderReprintDialog(),
+    renderSettingsModal());
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Render loop
+   ═══════════════════════════════════════════════════════════════ */
+const appRoot = document.getElementById('app');
+
+function render() {
+  // Preserve keyboard focus + caret across the full re-render
+  const active = document.activeElement;
+  const fkey = active && active.dataset ? active.dataset.fkey : null;
+  const caret = (fkey && 'selectionStart' in active) ? active.selectionStart : null;
+
+  document.documentElement.setAttribute('data-theme', state.settings.theme);
+  document.documentElement.style.setProperty('--fs', String(state.settings.fontScale));
+  state.page = Math.min(state.page, pageCount(currentList()) - 1);
+  if (state.page < 0) state.page = 0;
+
+  appRoot.textContent = '';
+  appRoot.appendChild(renderApp());
+
+  // 內容放不下時的處理（PRD §2.2「顯示長度上限與截斷規則」未給值）：
+  //   1. 先沿既有字級級距（32/24/20/16）往下縮，縮得下就完全不動
+  //   2. 縮到最小仍放不下，才捲一次露出結尾並停住
+  const MQ_SPEED = 50;                 // px / 秒
+  const STEPS_NUM = [32, 24, 20, 16];  // 訂單編號可用字級
+  const STEPS_SUB = [20, 16];          // 預約時間等次要資訊
+  const fs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fs')) || 1;
+
+  appRoot.querySelectorAll('.mq').forEach(el => {
+    const track = el.firstElementChild;
+    if (!track) return;
+    if (track.offsetWidth - el.clientWidth <= 1) return;   // 放得下，什麼都不做
+
+    // 1. 縮字級
+    const steps = el.classList.contains('card-num') ? STEPS_NUM : STEPS_SUB;
+    const curPx = parseFloat(getComputedStyle(el).fontSize);
+    const target = curPx * (el.clientWidth / track.offsetWidth);
+    const fits = steps.filter(v => v * fs <= target);
+    const chosen = fits.length ? Math.max(...fits) : Math.min(...steps);
+    if (chosen * fs < curPx) el.style.fontSize = 'calc(' + chosen + 'px * var(--fs))';
+
+    // 2. 還是放不下才捲一次
+    const over = track.offsetWidth - el.clientWidth;
+    if (over <= 1) return;
+    el.classList.add('marquee');
+    el.style.setProperty('--mq-shift', (-over - 2) + 'px');
+    el.style.setProperty('--mq-dur', Math.max(1.2, over / MQ_SPEED).toFixed(1) + 's');
+  });
+
+  // Dialog 高度固定：不因搜尋前／後或結果筆數而變。
+  // 取主畫面訂單卡片的高度（PRD §2.3.1 — 結果卡片版面與主畫面完全相同），
+  // 但不超過 .modal 的 90vh 上限。
+  const dlg = appRoot.querySelector('.search-dialog');
+  if (dlg) {
+    const boardCard = appRoot.querySelector('.grid .card');
+    const head = dlg.querySelector('.dlg-head');
+    // Dialog 外框：上下 padding 48 ＋ 標題列 ＋ 標題與內容間距 16
+    const chrome = 48 + head.getBoundingClientRect().height + 16;
+    const maxH = window.innerHeight * 0.9 - chrome;
+    const boardH = boardCard ? boardCard.getBoundingClientRect().height : 560;
+    dlg.style.setProperty('--dlg-h', Math.round(Math.min(boardH, maxH)) + 'px');
+  }
+
+  // Drop slide-in memory for cards that left the list
+  const live = new Set(state.orders.concat(state.history).map(o => o.id));
+  seenCardIds.forEach(id => { if (!live.has(id)) seenCardIds.delete(id); });
+
+  if (fkey) {
+    const next = appRoot.querySelector('[data-fkey="' + fkey + '"]');
+    if (next) {
+      next.focus();
+      if (caret != null) { try { next.setSelectionRange(caret, caret); } catch (e) {} }
+    }
+  }
+
+  announceNew();
+}
+
+// 新進單語音提示 —— 由裝置設定「通知提示開關」控制（PRD §4，預設關）
+function announceNew() {
+  if (state.settings.notify) {
+    state.orders.forEach(order => {
+      if (!knownOrderIds.has(order.id)) announceNewOrder(order, state.lang);
+    });
+  }
+  knownOrderIds = new Set(state.orders.map(o => o.id));
+}
+
+/* 視窗尺寸改變 → 重算版面與卡片高度 */
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(render, 120);
+});
+
+/* 已消單訂單逾 6 小時自動清除（PRD §5.1）*/
+setInterval(() => { if (pruneHistory()) render(); }, 60 * 1000);
+
+/* PRD §2.1 — App 寫死「保持螢幕喚醒」，不另做開關設定 */
+let wakeLock = null;
+async function keepAwake() {
+  try {
+    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+  } catch (e) { /* 非 https / 不支援時略過 */ }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') keepAwake();
+});
+keepAwake();
+
+/* Outside-click / Escape closing for the kebab menu.
+   The open panel is removed directly (no full re-render) so the button that
+   was clicked survives to receive its own click — same sequence as React. */
+document.addEventListener('mousedown', (e) => {
+  if (state.menuOpen) {
+    const menu = appRoot.querySelector('.card-foot .menu');
+    if (menu && !menu.contains(e.target)) { menu.remove(); state.menuOpen = null; }
+  }
+}, true);
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (state.menuOpen) { state.menuOpen = null; render(); }
+});
+
+/* ═══ Go ═══ */
+render();
+</script>
+</body>
+</html>
