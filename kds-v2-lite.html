@@ -51,10 +51,12 @@ html[data-theme="light"]{
   --text-sub:#71717A;
   --text-disable:#D4D4D8;
   --overlay:rgba(24,24,27,0.4);
+  --error-strong:#D0342C;    /* 徽章／電量危險：error #FF8A80 壓暗至白底 AA */
+  --warning-strong:#B26A00;  /* 電量偏低：warning #FFAB40 壓暗至白底 AA */
   --meta-bg:#F5F8F9;
   --meta-ready-bg:#EAF2FB;
   --state-ready:#5292D9;
-  --seat:#D0342C;            /* 後結座位紅字 — 由 error #FF8A80 同色相壓暗至白底 AA */
+  --seat:#D0342C;            /* 保留：PRD §2.2 的後結座位紅字。目前不顯示（已由加點標籤取代） */
   --toast-bg:#272A3A;
   --toast-fg:#FFFFFF;
   --cta-brand-bg:#58B6A8;
@@ -77,6 +79,8 @@ html[data-theme="dark"]{
   --text-sub:#B8BCC4;
   --text-disable:#7A7F8C;
   --overlay:rgba(0,0,0,0.65);
+  --error-strong:#FF8A80;    /* 深色模式改用亮紅，對 surface ≈ 7:1 */
+  --warning-strong:#FFAB40;
   --meta-bg:#2A2F3B;
   --meta-ready-bg:#16304A;
   --state-ready:#5292D9;
@@ -90,6 +94,8 @@ html[data-theme="dark"]{
   --dropdown-item-pressed:#8089A0;
   --menu-shadow:0px 16px 40px rgba(0,0,0,0.55), 0px 4px 10px rgba(0,0,0,0.4);
   --menu-ring:#404656;
+  --error-light:#3A1F1D;
+  --warning-light:#3A2C16;
 }
 
 /* ═══ Base ═══ */
@@ -134,16 +140,53 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   cursor:pointer;user-select:none;transition:background .08s linear;}
 .iconbtn:active{background:var(--g2);}
 .iconbtn .icon{width:36px;height:36px;}
+/* 未讀數徽章（Toolbar 通知）*/
+.iconbtn{position:relative;}
+.rail-badge{position:absolute;top:-6px;right:-6px;min-width:26px;height:26px;padding:0 5px;border-radius:var(--r-full);
+  background:var(--error-strong);color:var(--white);font-size:16px;font-weight:700;
+  /* 圓圈是 border-box（含 2px 白邊），用 flex 置中才不會被 line-height 推偏 */
+  display:flex;align-items:center;justify-content:center;line-height:1;
+  border:2px solid var(--surface);font-variant-numeric:tabular-nums;}
+/* 電量狀態（PRD §2.3 — 低於 20% / 10% 需提示）*/
+.rail-bottom{margin-top:auto;display:flex;flex-direction:column;gap:12px;align-items:center;}
+.battery{width:60px;padding:6px 0 4px;border-radius:var(--r-md);display:flex;flex-direction:column;align-items:center;gap:2px;
+  color:var(--text-sub);user-select:none;
+  /* 原型模擬用：點擊切換電量斷點。正式版是純狀態顯示，不可點 */
+  border:none;background:transparent;font-family:inherit;cursor:pointer;}
+.battery:hover{outline:1px dashed var(--g4);outline-offset:-1px;}   /* 虛線＝模擬功能，與右上角開關同語彙 */
+.battery:active{opacity:.6;}
+.battery .bat-pct{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;}
+.battery.low{color:var(--warning-strong);}     /* 只換 icon 與文字色，不加底色 */
+.battery.crit{color:var(--error-strong);}
 
 /* ═══ ChannelTabs ═══ */
 .tabs{display:flex;gap:12px;align-items:center;}
 .tab{background:var(--surface-alt);color:var(--text);border:2px solid var(--border);border-radius:var(--r-md);
   height:60px;padding:12px 20px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;
-  user-select:none;transition:background .08s linear;}
+  user-select:none;transition:background .08s linear;flex-shrink:0;white-space:nowrap;}
 .tab:active{background:var(--g2);}
 .tab.active{background:var(--brand-primary);color:var(--white);border-color:transparent;font-weight:700;}
 .tab .t-label{font-size:24px;font-weight:inherit;}
 .tab .t-count{font-size:20px;font-weight:inherit;}
+
+/* ═══ 原型模擬開關（非產品功能）═══
+   有/無 CDS、前/後結 會改變 PRD 的流程與選單，用虛線框與產品 UI 區隔。 */
+.simbar{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;
+  border:1px dashed var(--g4);border-radius:var(--r-md);padding:8px 12px;}
+.simbar .sim-tag{font-size:14px;font-weight:700;color:var(--text-sub);letter-spacing:1px;flex-shrink:0;}
+.sim-group{display:flex;align-items:center;gap:8px;}
+.sim-group .sim-label{font-size:16px;font-weight:700;color:var(--text-sub);white-space:nowrap;}
+.sim-group .seg{padding:3px;gap:3px;}
+.sim-group .seg button{font-size:16px;padding:5px 12px;white-space:nowrap;}
+
+/* ═══ 危險操作（PRD §3.5 #4 — 置於選單最底，以分隔線與變色隔開）═══ */
+.menu-sep{height:1px;background:var(--menu-ring);flex-shrink:0;}
+.btn.danger{background:var(--error-light);color:var(--error-strong);border:1px solid var(--error-strong);}
+.btn.danger:active{background:var(--error-strong);color:var(--white);}
+.btn.danger:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:var(--border);}
+.modal.confirm-dialog{width:420px;gap:12px;}
+.confirm-body{font-size:20px;line-height:1.4;color:var(--text);}
+.confirm-body .c-num{font-weight:700;}
 
 /* ═══ 搜尋訂單 Dialog（PRD §2.3.1）═══ */
 /* .modal 的 width 在後面定義，故提高一級選擇器權重 */
@@ -151,7 +194,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .dlg-cols{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;
   height:var(--dlg-h,560px);}   /* render() 依主畫面卡片高度寫入 --dlg-h */
 .dlg-left{display:flex;flex-direction:column;gap:12px;}
-.dlg-go{margin-top:auto;}
+.dlg-actions{margin-top:auto;display:flex;gap:12px;}
 .dlg-right{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0;overflow-y:auto;}
 .dlg-right .card{flex:1 1 auto;min-height:0;}   /* 填滿右欄，與主畫面卡片等高 */
 .dlg-hint{margin:auto;text-align:center;color:var(--text-sub);font-size:24px;line-height:1.4;padding:0 24px;}
@@ -264,9 +307,13 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .item.is-done .item-bar{background:var(--g3);}
 .item-main{display:flex;flex-direction:column;gap:8px;align-items:flex-start;flex:1 0 0;min-width:0;}
 .item-row{display:flex;gap:8px;align-items:center;width:100%;}
-.item-name{flex:1 0 0;min-width:0;color:var(--text);font-size:calc(24px * var(--fs));font-weight:700;line-height:1.1;}
-.item-seat{color:var(--seat);font-size:calc(20px * var(--fs));font-weight:700;white-space:nowrap;flex-shrink:0;}
-.item.is-done .item-seat{color:var(--text-disable);}
+.item-name{flex:1 1 auto;min-width:2.5em;color:var(--text);font-size:calc(24px * var(--fs));font-weight:700;line-height:1.1;}
+/* 加點標籤（品項層級）—— 外框線而非實心：這是標籤不是按鈕，實心品牌綠會跟「出餐」CTA 混淆。
+   也不用紅色：紅色已指派給危險操作（PRD §5.3 一色一義）。*/
+.item-addon{background:transparent;color:var(--brand-primary);border:2px solid var(--brand-primary);
+  font-size:calc(16px * var(--fs));font-weight:700;padding:0 6px;border-radius:var(--r-xs);
+  white-space:nowrap;flex-shrink:0;line-height:1.5;}
+.item.is-done .item-addon{color:var(--text-disable);border-color:var(--text-disable);}
 .item-qty{color:var(--text);font-size:calc(24px * var(--fs));font-weight:700;white-space:nowrap;flex-shrink:0;}
 .item.is-done .item-name,.item.is-done .item-qty{color:var(--text-disable);}
 .item-notes{color:var(--text-sub);font-size:calc(20px * var(--fs));font-weight:400;width:100%;line-height:1.3;}
@@ -342,6 +389,20 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   font-family:inherit;font-size:24px;font-weight:700;color:var(--text);}
 .reprint-opt:active{background:var(--surface-alt);}
 .reprint-opt.on{border-color:var(--brand-primary);}
+
+/* ═══ 通知 Dialog（PRD §2.3 — 商店通知）═══ */
+.modal.notif-dialog{width:560px;gap:16px;}
+.notif-list{display:flex;flex-direction:column;gap:12px;max-height:52vh;overflow-y:auto;}
+.notif-item{background:var(--page);border:2px solid var(--border);border-radius:var(--r-md);padding:12px 16px;
+  display:flex;align-items:flex-start;gap:12px;}
+.notif-item.unread{background:var(--meta-ready-bg);border-color:var(--state-ready);}
+.notif-dot{width:10px;height:10px;border-radius:var(--r-full);background:transparent;flex-shrink:0;margin-top:9px;}
+.notif-item.unread .notif-dot{background:var(--state-ready);}
+.notif-body{flex:1 0 0;min-width:0;display:flex;flex-direction:column;gap:4px;}
+.notif-time{font-size:16px;font-weight:400;color:var(--text-sub);font-variant-numeric:tabular-nums;}
+.notif-text{font-size:20px;font-weight:700;color:var(--text);line-height:1.3;word-break:break-word;}
+.notif-item.is-read .notif-text{font-weight:400;color:var(--text-sub);}
+.notif-empty{color:var(--text-sub);font-size:20px;text-align:center;padding:40px 0;}
 </style>
 </head>
 <body>
@@ -360,9 +421,9 @@ const STR = {
   zh: {
     appTitle:'KDS 2.0', tabAll:'全部', tabDineIn:'內用', tabTakeout:'外帶',
     tabDelivery:'外送', tabUberEats:'Uber Eats', tabFoodpanda:'foodpanda',
-    serve:'出餐', pickedUp:'已取餐', scheduled:'預約', seatPrefix:'座',
+    serve:'出餐', pickedUp:'已取餐', scheduled:'預約', addon:'加點',
     toastPickedUp:'已取餐', actionCall:'叫號', actionReprint:'補印',
-    customer:'訂購人', phone:'電話', address:'地址', note:'備註', orderNote:'訂單備註',
+    customer:'訂購人', phone:'電話', address:'地址', note:'備註',
     toastCalled:'已叫號', toastReprinted:'已補印',
     reprintTitle:'補印', reprintKitchen:'廚房單', reprintSticker:'標籤貼紙',
     confirm:'確認', cancel:'取消', itemMemo:'備註',
@@ -383,13 +444,27 @@ const STR = {
     sizeSmall:'小', sizeMedium:'中', sizeLarge:'大', sizeXLarge:'特大',
     paid:'已付款', unpaid:'未付款',
     showCompletedItems:'顯示已完成品項',
+    // 通知 / 電量（PRD §2.3 Toolbar）
+    notifyTitle:'通知', markAllRead:'全部已讀', noNotifications:'目前沒有通知',
+    undoTitle:'回上一步', refreshTitle:'重新整理',
+    // 原型模擬開關
+    simTag:'模擬', simCds:'CDS', simOn:'有', simOff:'無',
+    simCheckout:'結帳', simPrepay:'前結', simPostpay:'後結',
+    // 退單（PRD §3.4 — 後結限定、需二次確認）
+    actionRefund:'退單', refundTitle:'確認退單？',
+    refundDesc:'退單後訂單將從畫面移除，廚師不可自行復原，需通知收銀。',
+    toastRefunded:'已退單', splitOrder:'已拆單訂單不可退單',
+    toastAllRead:'已全部標示為已讀',
+    battery:'電量', batteryCycle:'模擬：點擊切換電量斷點', batteryCharging:'充電中',
+    batteryLow:'電量低於 20%，請接上電源',
+    batteryCritical:'電量低於 10%，請立即接上電源',
   },
   en: {
     appTitle:'KDS 2.0', tabAll:'All', tabDineIn:'Dine-in', tabTakeout:'Takeout',
     tabDelivery:'Delivery', tabUberEats:'Uber Eats', tabFoodpanda:'foodpanda',
-    serve:'Serve', pickedUp:'Picked Up', scheduled:'Sched.', seatPrefix:'S',
+    serve:'Serve', pickedUp:'Picked Up', scheduled:'Sched.', addon:'Add-on',
     toastPickedUp:'Picked up', actionCall:'Call', actionReprint:'Reprint',
-    customer:'Customer', phone:'Phone', address:'Address', note:'Note', orderNote:'Order note',
+    customer:'Customer', phone:'Phone', address:'Address', note:'Note',
     toastCalled:'Called', toastReprinted:'Reprinted',
     reprintTitle:'Reprint', reprintKitchen:'Kitchen ticket', reprintSticker:'Label sticker',
     confirm:'Confirm', cancel:'Cancel', itemMemo:'Note',
@@ -410,6 +485,20 @@ const STR = {
     sizeSmall:'S', sizeMedium:'M', sizeLarge:'L', sizeXLarge:'XL',
     paid:'Paid', unpaid:'Unpaid',
     showCompletedItems:'Show Completed Items',
+    // 通知 / 電量（PRD §2.3 Toolbar）
+    notifyTitle:'Notifications', markAllRead:'Mark all read', noNotifications:'No notifications',
+    undoTitle:'Undo', refreshTitle:'Refresh',
+    // 原型模擬開關
+    simTag:'DEMO', simCds:'CDS', simOn:'Yes', simOff:'No',
+    simCheckout:'Checkout', simPrepay:'Pre-pay', simPostpay:'Post-pay',
+    // 退單（PRD §3.4 — 後結限定、需二次確認）
+    actionRefund:'Refund', refundTitle:'Refund this order?',
+    refundDesc:'The order leaves the board. Kitchen staff cannot undo this — notify the cashier.',
+    toastRefunded:'Refunded', splitOrder:'Split orders cannot be refunded',
+    toastAllRead:'All marked as read',
+    battery:'Battery', batteryCycle:'Demo: click to step through battery levels', batteryCharging:'Charging',
+    batteryLow:'Battery below 20% — plug in the charger',
+    batteryCritical:'Battery below 10% — plug in the charger now',
   },
 };
 function t(lang, key) {
@@ -434,9 +523,13 @@ function mkOrders() {
         { id:'i1', name:'牛肉麵', qty:1, notes:'不加辣、湯多', memo:'客人趕時間', seat:'1' },
         { id:'i2', name:'炒青菜', qty:1, notes:'', seat:'1' },
         { id:'i3', name:'控肉飯', qty:2, notes:'', seat:'2' },
+        // 加點（後結內用同桌追加）—— 會被排到品項清單最上方
+        { id:'i3a', name:'滷蛋',   qty:2, notes:'', seat:'1', addon:true },
+        { id:'i3b', name:'貢丸湯', qty:1, notes:'不要芹菜', seat:'2', addon:true },
       ]},
+    // isSplit —— PRD §3.4：『已拆單訂單』的「退單」按鈕 Disable
     { id:'ord-002', tableNumber:'B2', orderNumber:'#0039', type:'dine-in', source:'pos',
-      startTime: now - 13 * MIN, paid:false, items:[
+      startTime: now - 13 * MIN, paid:false, isSplit:true, items:[
         { id:'i4', name:'蔥油雞飯', qty:2, notes:'飯量：中' },
         { id:'i5', name:'紅燒獅子頭', qty:1, notes:'少油', attachedToPrev:true },
         { id:'i6', name:'老虎蝦', qty:1, notes:'' },
@@ -540,6 +633,23 @@ function mkHistory() {
   }];
 }
 
+// 商店通知（PRD §2.3 Toolbar「通知」）—— 依時間新到舊排列
+function mkNotifications() {
+  const now = Date.now();
+  return [
+    { id:'n1', time: now -   4 * MIN, read:false,
+      zh:'「牛肉麵」已售完，點餐機已同步停售', en:'"Beef Noodles" sold out — synced to the kiosk' },
+    { id:'n2', time: now -  26 * MIN, read:false,
+      zh:'菜單已更新，共 3 項品項異動',        en:'Menu updated — 3 items changed' },
+    { id:'n3', time: now -  52 * MIN, read:false,
+      zh:'出單機離線，請檢查電源與連線',        en:'Printer offline — check power and connection' },
+    { id:'n4', time: now - 118 * MIN, read:true,
+      zh:'網路連線已恢復',                  en:'Network connection restored' },
+    { id:'n5', time: now - 214 * MIN, read:true,
+      zh:'商店已於 11:00 開始接單',          en:'Store started accepting orders at 11:00' },
+  ];
+}
+
 /* ───────────────────────── Icons ───────────────────────── */
 const ICONS = {
   search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
@@ -558,17 +668,54 @@ const ICONS = {
   ellipsisV:'<circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/>',
   check:'<polyline points="20 6 9 17 4 12"/>',
   utensils:'<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
-  bike:'<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
+  // 外送＝店家自送。boxicons_scooter-delivery.svg（實心填色，見 SOLID_ICONS）。
+  // 原始檔的 fill="white" 已移除，改由外層 currentColor 帶色，深淺模式與色塊才吃得到。
+  scooter:'<path d="M20.26 15.47C20.26 15.47 20.2 15.43 20.16 15.42C19.76 15.2 19.32 15.1 18.87 15.05L17.79 8H19.01C19.56 8 20.01 7.55 20.01 7V5C20.01 4.45 19.56 4 19.01 4H17.12C16.71 2.81 15.59 2 14.29 2H12.01V4H14.29C14.5294 3.99969 14.7611 4.0853 14.9427 4.24128C15.1244 4.39727 15.2441 4.61326 15.28 4.85L16.9 15.39C16.44 15.63 16.03 15.96 15.71 16.39C15.57 16.58 15.46 16.78 15.35 16.99H13V7C13 6.45 12.55 6 12 6H3C2.45 6 2 6.45 2 7V11C2 11.55 2.45 12 3 12H3.03C2.4 12.84 2 13.87 2 15V18C2 18.55 2.45 19 3 19H4.05C4.3 20.69 5.74 22 7.5 22C9.26 22 10.7 20.69 10.95 19H15.05C15.3 20.69 16.74 22 18.5 22C20.43 22 22 20.43 22 18.5C22 17.26 21.33 16.1 20.26 15.47ZM4 8H11V10H4V8ZM7.5 20C7.27846 20.0001 7.05965 19.9511 6.85934 19.8564C6.65903 19.7618 6.48221 19.6239 6.34161 19.4527C6.20101 19.2815 6.10013 19.0812 6.04625 18.8663C5.99237 18.6515 5.98682 18.4273 6.03 18.21C6.08 17.98 6.17 17.76 6.3 17.6C6.41 17.45 6.55 17.34 6.7 17.24C6.7 17.24 6.71 17.24 6.72 17.23C7.02 17.05 7.37 16.98 7.71 17.02H7.78C7.94 17.05 8.1 17.1 8.25 17.18L8.31 17.21C8.66 17.44 8.9 17.78 8.98 18.17C9 18.27 9.01 18.38 9.01 18.48C9.01 19.31 8.34 19.98 7.51 19.98L7.5 20ZM11 17H10.66C10.5765 16.824 10.476 16.6565 10.36 16.5C10.33 16.46 10.3 16.43 10.28 16.39C10.17 16.25 10.05 16.11 9.92 15.99C9.88 15.95 9.83 15.91 9.79 15.87C9.62 15.72 9.45 15.59 9.25 15.47C9.21864 15.4496 9.1851 15.4329 9.15 15.42C8.65 15.15 8.08 15 7.49 15C6.38 15 5.36 15.51 4.7 16.38C4.55 16.57 4.43 16.77 4.32 17H3.98V15C3.98 13.35 5.33 12 6.98 12H10.98V17H11ZM18.5 20C18.2211 20.0007 17.9476 19.9236 17.7101 19.7773C17.4727 19.631 17.2809 19.4214 17.1561 19.1719C17.0314 18.9225 16.9788 18.6432 17.0042 18.3655C17.0296 18.0878 17.1321 17.8227 17.3 17.6C17.5189 17.3084 17.8362 17.1061 18.193 17.0307C18.5498 16.9553 18.9218 17.0119 19.24 17.19C19.4713 17.3224 19.6641 17.5129 19.7991 17.7427C19.9342 17.9724 20.0069 18.2335 20.01 18.5C20.01 19.33 19.34 20 18.51 20H18.5Z"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   shoppingBag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
   circleDollarSign:'<circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/>',
 };
+// 實心填色的 icon（外部匯入）—— 外層要改成 fill 帶色、不描邊
+const SOLID_ICONS = new Set(['scooter']);
 function icon(name, size) {
+  if (!ICONS[name]) {                      // 少一個 icon 要看得見，不要靜靜畫空的
+    console.error('[kds] missing icon:', name);
+  }
+  const solid = SOLID_ICONS.has(name);
   const sw = name === 'check' ? 3 : 2;
+  const span = document.createElement('span');
+  span.className = 'icon' + (solid ? ' solid' : '');
+  span.innerHTML = '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" ' +
+    'fill="' + (solid ? 'currentColor' : 'none') + '" ' +
+    'stroke="' + (solid ? 'none' : 'currentColor') + '" stroke-width="' + sw + '" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+    ICONS[name] + '</svg>';
+  return span;
+}
+
+/* 電量 icon —— 內部填充長度隨電量變動，故不走 ICONS（純 stroke）的路徑 */
+function batteryIcon(level, charging, size) {
+  const pct = Math.max(0, Math.min(1, level));
+  // 內部可用寬度 x 4.5 → 16.5（12）。電量>0 時保留最小可見寬度，免得剩幾 % 就整條不見。
+  const w = pct > 0 ? Math.max(1.5, Math.round(12 * pct * 100) / 100) : 0;
   const span = document.createElement('span');
   span.className = 'icon';
   span.innerHTML = '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" ' +
-    'stroke="currentColor" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round">' +
-    ICONS[name] + '</svg>';
+    'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    // 外框：圓角收到 2.5，維持「圓角矩形」而不是膠囊（rx 3.5 會太圓）
+    '<rect x="2" y="7" width="17" height="10" rx="2.5"/>' +
+    // 右側電極：實心水滴狀凸起（參考圖是實心的，不是一條線）
+    '<path d="M19.6 10.1c1.6.4 2.6 1 2.6 1.9s-1 1.5-2.6 1.9z" fill="currentColor" stroke="none"/>' +
+    // 電量條：實心圓角方塊，靠左，與外框留間距
+    (w ? '<rect x="4.5" y="9.5" width="' + w + '" height="5" rx="1.2" fill="currentColor" stroke="none"/>' : '') +
+    // 充電閃電：只在充電中顯示。
+    // 填底色＋描前景色 —— 疊在電量條上時靠底色挖空、落在空白區時靠外框成形，
+    // 半滿時跨在交界上也還讀得出來（單一顏色會在其中一種情況消失）。
+    (charging
+      ? '<path d="M11.6 8.8 8.4 12.7h2l-.8 2.7 3.4-4.3h-2.1z" fill="var(--surface)" ' +
+        'stroke="currentColor" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>'
+      : '') +
+    '</svg>';
   return span;
 }
 
@@ -581,7 +728,7 @@ const LOGO_FOODPANDA = '<svg width="28" height="28" viewBox="0 0 28 28.3066" fil
 const CHANNEL_TILE = {
   'dine-in':  { kind:'icon', icon:'utensils',    color:'var(--svc-dinein)' },
   takeout:    { kind:'icon', icon:'shoppingBag', color:'var(--svc-takeout)' },
-  delivery:   { kind:'icon', icon:'bike',        color:'var(--svc-delivery)' },
+  delivery:   { kind:'icon', icon:'scooter',     color:'var(--svc-delivery)' },
   ubereats:   { kind:'logo', color:'var(--svc-ubereats)',  svg:LOGO_UBEREATS },
   foodpanda:  { kind:'logo', color:'var(--svc-foodpanda)', svg:LOGO_FOODPANDA },
 };
@@ -668,16 +815,47 @@ const DEFAULT_SETTINGS = {
 // 原型用網址 ?cds=0 或 #cds=0 切到「無 CDS」流程（出餐即消單）；
 // 也可在 console 執行 kdsSetCds(false) 即時切換，方便 demo 兩條路徑。
 let HAS_CDS = !/(?:[?#&])cds=0(?:&|$)/.test(location.search + location.hash);
-window.kdsSetCds = (v) => { HAS_CDS = !!v; render(); return HAS_CDS; };
+function setCds(v) {
+  HAS_CDS = !!v;
+  // 無 CDS 時沒有「待取餐」這個狀態（PRD §3.1），已出餐的訂單退回製作中
+  if (!HAS_CDS) state.orders.forEach(o => { o.called = false; });
+  state.menuOpen = null;
+  render();
+}
+window.kdsSetCds = (v) => { setCds(v); return HAS_CDS; };
 
 // PRD §2.2 — 後結座位紅字：店家啟用後結內用 ＋ 內用單 ＋ 品項綁定座位。
 // 後結帳支援與否為 PRD §1.3 待確認項，原型用 ?postpay=0 / kdsSetPostpay(false) 關閉。
 let POSTPAY_DINEIN = !/(?:[?#&])postpay=0(?:&|$)/.test(location.search + location.hash);
-window.kdsSetPostpay = (v) => { POSTPAY_DINEIN = !!v; render(); return POSTPAY_DINEIN; };
+function setPostpay(v) {
+  POSTPAY_DINEIN = !!v;
+  state.menuOpen = null;
+  state.refund = { open:false, orderId:null };   // 切回前結時關掉退單確認框
+  render();
+}
+window.kdsSetPostpay = (v) => { setPostpay(v); return POSTPAY_DINEIN; };
 
 // PRD §3.4 — 「補印」顯示條件為「需出單機」。原型用 ?printer=0 模擬沒有出單機。
 let HAS_PRINTER = !/(?:[?#&])printer=0(?:&|$)/.test(location.search + location.hash);
 window.kdsSetPrinter = (v) => { HAS_PRINTER = !!v; render(); return HAS_PRINTER; };
+
+// PRD §2.3 — 電量狀態，低於 20% / 10% 時需提示。
+// 有 Battery Status API 就讀真實電量；沒有（或帶 ?battery=NN）則用模擬值。
+// demo 可在 console 執行 kdsSetBattery(8) / kdsSetBattery(80, true) 切換。
+const BATTERY_PARAM = /(?:[?#&])battery=(\d{1,3})/.exec(location.search + location.hash);
+const BATTERY = { level: BATTERY_PARAM ? Number(BATTERY_PARAM[1]) / 100 : 0.75, charging:false };
+const BATTERY_LOW = 20, BATTERY_CRIT = 10;
+// 原型模擬：點電量塊依序切換，5 段電量 × 未插電／充電中 ＝ 10 種。
+// 先走完一輪未插電（放電），再走一輪充電中。20 ＝ 琥珀、10 ＝ 紅燈。
+const BATTERY_STEPS = [
+  { pct:100, charging:false }, { pct:75, charging:false }, { pct:50, charging:false },
+  { pct:20,  charging:false }, { pct:10, charging:false },
+  { pct:100, charging:true  }, { pct:75, charging:true  }, { pct:50, charging:true  },
+  { pct:20,  charging:true  }, { pct:10, charging:true  },
+];
+let BATTERY_MANUAL = false;   // 手動切過之後就不讓系統電量蓋回去
+let batteryAlerted = { low:false, crit:false };
+function batteryPct() { return Math.round(BATTERY.level * 100); }
 
 const RETENTION_MS = 6 * 60 * 60 * 1000;   // PRD §5.1 — 訂單留存 6 小時
 const UNDO_LIMIT = 5;                      // PRD §2.3 / §3.3 — 回上一步最多 5 步
@@ -698,11 +876,14 @@ function cloneHistory() {
 const state = {
   orders: cloneInitial(),
   history: cloneHistory(),   // 已消單訂單（保留 6 小時，僅供搜尋查詢）
+  notifications: mkNotifications(),   // 商店通知（PRD §2.3）
+  notifOpen: false,
   undo: [],             // 動作層級復原堆疊，最多 5 步
   channel: 'all',
   // 搜尋訂單 Dialog（PRD §2.3.1）
   search: { open:false, query:'', results:null, selected:null },   // results === null 表示尚未搜尋
   reprint: { open:false, orderId:null, kitchen:false, sticker:false },
+  refund: { open:false, orderId:null },   // 退單二次確認（PRD §3.4 / §3.5）
   settingsOpen: false,
   // PRD §4 —「點確認才儲存」：設定頁改動先進草稿，按確認才寫回 state.settings
   draft: null,
@@ -755,6 +936,70 @@ function cancelSettings() {
 }
 
 function findOrder(id) { return state.orders.find(o => o.id === id); }
+
+/* ── 通知（PRD §2.3 — Toolbar「通知」＝商店通知）─────────────
+   以檢視為主：條列「通知時間 ＋ 事件內容」，
+   左下「關閉」、右下「全部已讀」。未讀以底色＋藍點標示。        */
+function unreadCount() { return state.notifications.filter(n => !n.read).length; }
+function openNotify() { state.notifOpen = true; state.menuOpen = null; render(); }
+function closeNotify() { state.notifOpen = false; render(); }
+function markAllRead() {
+  if (!unreadCount()) return;
+  state.notifications.forEach(n => { n.read = true; });
+  pushToast(t(state.lang, 'toastAllRead'));
+  render();
+}
+// 系統事件寫入通知清單（目前只有電量提示會用到）
+function pushNotification(key) {
+  state.notifications.unshift({
+    id:'n-' + Date.now(), time: Date.now(), read:false,
+    zh: STR.zh[key], en: STR.en[key],
+  });
+  pushToast(t(state.lang, key));
+}
+
+/* ── 電量提示（PRD §2.3 — 低於 20 / 10% 需提示）───────────── */
+function checkBatteryAlert() {
+  if (BATTERY.charging) { batteryAlerted = { low:false, crit:false }; return; }
+  const pct = batteryPct();
+  if (pct > BATTERY_LOW)  batteryAlerted.low  = false;
+  if (pct > BATTERY_CRIT) batteryAlerted.crit = false;
+  if (pct <= BATTERY_CRIT && !batteryAlerted.crit) {
+    batteryAlerted.crit = true; batteryAlerted.low = true;
+    pushNotification('batteryCritical');
+  } else if (pct <= BATTERY_LOW && !batteryAlerted.low) {
+    batteryAlerted.low = true;
+    pushNotification('batteryLow');
+  }
+}
+window.kdsSetBattery = (pct, charging) => {
+  BATTERY_MANUAL = true;
+  BATTERY.level = Math.max(0, Math.min(100, Number(pct) || 0)) / 100;
+  if (charging != null) BATTERY.charging = !!charging;
+  checkBatteryAlert();
+  render();
+  return batteryPct();
+};
+
+// 點電量塊 → 跳到下一個斷點（到底回頭）。
+function cycleBattery() {
+  const i = BATTERY_STEPS.findIndex(sp =>
+    sp.pct === batteryPct() && sp.charging === BATTERY.charging);
+  const next = BATTERY_STEPS[(i + 1) % BATTERY_STEPS.length];   // 找不到時 i = -1 → 從頭開始
+  window.kdsSetBattery(next.pct, next.charging);
+}
+if (!BATTERY_PARAM && navigator.getBattery) {
+  navigator.getBattery().then(b => {
+    const sync = () => {
+      if (BATTERY_MANUAL) return;              // 手動模擬中，不讓系統電量蓋回去
+      BATTERY.level = b.level; BATTERY.charging = b.charging;
+      checkBatteryAlert(); render();
+    };
+    b.addEventListener('levelchange', sync);
+    b.addEventListener('chargingchange', sync);
+    sync();
+  }).catch(() => {});
+}
 
 /* ── 回上一步（PRD §2.3 / §3.3）─────────────────────────────
    動作層級的復原堆疊，最多 5 步，涵蓋品項標記、出餐、消單。       */
@@ -839,6 +1084,12 @@ function handlePickup(orderId) {
 /* ── 「⋯」訂單選單（PRD §3.4）── */
 function handleAction(action, order) {
   state.menuOpen = null;
+  // PRD §3.4 / §3.5 — 退單是不可逆操作，二次確認只保留此處與後結內用刪除品項
+  if (action === 'refund') {
+    state.refund = { open:true, orderId:order.id };
+    render();
+    return;
+  }
   if (action === 'reprint') {
     // PRD §3.4 — 補印需先以 Dialog 選擇「廚房單／標籤貼紙」
     state.reprint = { open:true, orderId:order.id, kitchen:false, sticker:false };
@@ -863,6 +1114,18 @@ function doReprint() {
     pushToast(`${t(state.lang, 'toastReprinted')}${kinds.join(sep)} ${order.orderNumber}`);
   }
   render();
+}
+
+// PRD §3.4 — 退單（後結限定）：二次確認後消單，轉入訂單查詢
+function doRefund() {
+  const id = state.refund.orderId;
+  state.refund = { open:false, orderId:null };
+  const order = findOrder(id);
+  if (!order) { render(); return; }
+  pushUndo();
+  pushToast(`${t(state.lang, 'toastRefunded')} ${order.orderNumber}`);
+  render();          // 先收掉確認框
+  closeOrder(id);    // 再播卡片淡出
 }
 
 function handleRefresh() {
@@ -936,16 +1199,31 @@ function orderStateKey(order) {
 }
 
 // 依 attachedToPrev 切群組：長度 1 ＝ 獨立品項，長度 >1 ＝ 套餐（主品項＋附屬品項）
-function mergeKey(it) {
-  return `${it.name}::${attrLines(it).join('|')}::${it.memo || ''}::${it.seat || ''}`;
+// PRD §1.5 — 加點屬「後結內用」情境（僅 POS 內用有此情境）。
+// 前結或非內用單：不顯示加點標籤，也不做置頂，品項一律照原順序。
+function showsAddon(order) { return POSTPAY_DINEIN && order.type === 'dine-in'; }
+
+function mergeKey(it, addonOn) {
+  // 加點與原單的同一品項不可合併 —— 兩者是不同時間點的需求。
+  // 不呈現加點時（前結）就不該用它切開，否則會出現兩列看起來完全相同的品項。
+  // seat 已不顯示，同理不納入 key。
+  return `${it.name}::${attrLines(it).join('|')}::${it.memo || ''}::${addonOn && it.addon ? 1 : 0}`;
 }
-function buildGroups(items, merge) {
+// 加點品項置頂（穩定排序，加點之間與原單之間各自維持原順序）
+function addonFirst(list, addonOn) {
+  if (!addonOn) return list;
+  const add = list.filter(g => g[0].addon);
+  return add.length ? add.concat(list.filter(g => !g[0].addon)) : list;
+}
+
+function buildGroups(order, merge) {
+  const addonOn = showsAddon(order);
   const groups = [];
-  for (const it of items) {
+  for (const it of order.items) {
     if (it.attachedToPrev && groups.length) groups[groups.length - 1].push(it);
     else groups.push([it]);
   }
-  if (!merge) return groups;
+  if (!merge) return addonFirst(groups, addonOn);
 
   // PRD §1.5 — 同一張訂單內「品項＋屬性完全相同」的多筆合併為一列、數量加總。
   // 套餐（帶附屬品項）不參與合併；合併結果留在第一次出現的位置。
@@ -954,7 +1232,7 @@ function buildGroups(items, merge) {
   for (const g of groups) {
     if (g.length > 1) { out.push(g); continue; }
     const it = g[0];
-    const key = mergeKey(it);
+    const key = mergeKey(it, addonOn);
     if (at.has(key)) {
       const cur = out[at.get(key)][0];
       cur.qty += it.qty;
@@ -965,7 +1243,7 @@ function buildGroups(items, merge) {
       out.push([{ ...it, _members: [it.id] }]);
     }
   }
-  return out;
+  return addonFirst(out, addonOn);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -976,13 +1254,39 @@ function buildGroups(items, merge) {
 function iconButton(name, title, onClick) {
   return h('button', { class:'iconbtn', title, onclick:onClick }, icon(name, 36));
 }
+/* 電量狀態（PRD §2.3）—— 低於 20 / 10% 變色。
+   正式版是純狀態顯示；這裡做成可點，是原型用來切換斷點看各狀態（同右上角模擬開關，上線前移除）。 */
+function renderBattery() {
+  const pct = batteryPct();
+  // 警示配色只看電量：插著電也可能是線鬆了／變壓器壞了，這時更需要看得到
+  const cls = pct <= BATTERY_CRIT ? ' crit'
+            : pct <= BATTERY_LOW  ? ' low' : '';
+  return h('button', {
+      class:'battery' + cls,
+      title:t(state.lang, 'battery') + ' ' + pct + '%'
+        + (BATTERY.charging ? ' · ' + t(state.lang, 'batteryCharging') : '')
+        + '　/　' + t(state.lang, 'batteryCycle'),
+      onclick: cycleBattery,
+    },
+    batteryIcon(BATTERY.level, BATTERY.charging, 32),
+    h('span', { class:'bat-pct', text:pct + '%' }));
+}
+
+/* Toolbar 由上而下：通知 → 搜尋 → 回上一步 → 重新整理 → 設定。
+   電量為狀態顯示（非按鈕），固定在側欄最下方。                      */
 function renderSideRail() {
+  const unread = unreadCount();
+  const bell = iconButton('bell', t(state.lang, 'notifyTitle'), openNotify);
+  if (unread) append(bell, h('span', { class:'rail-badge', text: unread > 99 ? '99+' : String(unread) }));
+
   return h('div', { class:'siderail' },
     h('div', { class:'toolbar' },
-      iconButton('settings', 'Settings', openSettings),
-      iconButton('search', 'Search', openSearch),
-      iconButton('cornerUpLeft', 'Undo last complete', handleUndo),
-      iconButton('refresh', 'Refresh', handleRefresh)));
+      bell,
+      iconButton('search', t(state.lang, 'searchTitle'), openSearch),
+      iconButton('cornerUpLeft', t(state.lang, 'undoTitle'), handleUndo),
+      iconButton('refresh', t(state.lang, 'refreshTitle'), handleRefresh),
+      iconButton('settings', t(state.lang, 'settingsTitle'), openSettings)),
+    h('div', { class:'rail-bottom' }, renderBattery()));
 }
 
 /* ── ChannelTabs ── */
@@ -1005,9 +1309,31 @@ function renderChannelTabs() {
       h('span', { class:'t-count', text:'(' + (counts[tab.key] || 0) + ')' }))));
 }
 
+/* ── 原型模擬開關（非產品功能）──────────────────────────────
+   有/無 CDS      → PRD §3.1 狀態序列、§3.2 叫號、§3.4 選單「叫號」
+   前結／後結內用   → PRD §2.2 座位紅字、§3.4 選單「退單」
+   正式版這兩者由系統／店家設定判定，不會有這組開關。              */
+function renderSimBar() {
+  const lang = state.lang;
+  return h('div', { class:'simbar' },
+    h('span', { class:'sim-tag', text:t(lang, 'simTag') }),
+    h('div', { class:'sim-group' },
+      h('span', { class:'sim-label', text:t(lang, 'simCds') }),
+      segControl(
+        [{ value:true,  label:t(lang, 'simOn') },
+         { value:false, label:t(lang, 'simOff') }],
+        HAS_CDS, setCds)),
+    h('div', { class:'sim-group' },
+      h('span', { class:'sim-label', text:t(lang, 'simCheckout') }),
+      segControl(
+        [{ value:false, label:t(lang, 'simPrepay') },
+         { value:true,  label:t(lang, 'simPostpay') }],
+        POSTPAY_DINEIN, setPostpay)));
+}
+
 /* ── TopBar ── */
 function renderTopBar() {
-  return h('div', { class:'topbar' }, renderChannelTabs());
+  return h('div', { class:'topbar' }, renderChannelTabs(), renderSimBar());
 }
 
 /* ── ChannelTag (Figma 7:1331 / 32:284 / 49:1125) ── */
@@ -1044,9 +1370,13 @@ function renderCustomerNote(order) {
     if ((order.type === 'ubereats' || order.type === 'foodpanda' || order.type === 'delivery') && c.address) {
       lines.push({ key:'address', label:t(state.lang, 'address'), value:c.address });
     }
-    if (c.note) lines.push({ key:'note', label:t(state.lang, 'note'), value:c.note });
   }
-  if (order.orderNotes) lines.push({ key:'ordernote', label:t(state.lang, 'orderNote'), value:order.orderNotes });
+  // 客人備註與訂單備註對廚房是同一件事（客人交代的話），合併為單一「備註」列
+  const notes = [c && c.note, order.orderNotes].filter(Boolean);
+  if (notes.length) {
+    lines.push({ key:'note', label:t(state.lang, 'note'),
+      value: notes.join(state.lang === 'zh' ? '；' : '; ') });
+  }
   if (!lines.length) return null;
 
   const collapsible = lines.length > 2;
@@ -1114,11 +1444,11 @@ function renderOrderItem(order, item, position, opts) {
     h('div', { class:'item-main' },
       h('div', { class:'item-row' },
         renderCheckbox(done, done, mark),
-        h('span', { class:'item-name', text:item.name }),
-        // PRD §2.2 — 後結內用 ＋ 內用單 ＋ 品項綁定座位 → 名稱後方紅字座位號
-        (POSTPAY_DINEIN && order.type === 'dine-in' && item.seat)
-          ? h('span', { class:'item-seat', text:t(state.lang, 'seatPrefix') + item.seat })
+        // 加點標籤：品項層級，且加點品項已排在清單最上方。僅後結內用情境顯示。
+        (item.addon && showsAddon(order))
+          ? h('span', { class:'item-addon', text:t(state.lang, 'addon') })
           : null,
+        h('span', { class:'item-name', text:item.name }),
         h('span', { class:'item-qty', text:'×' + item.qty })),
       // PRD §2.2 — 品項名稱 ＋ 屬性 ＋ 數量 ＋ 品項備註；備註恆顯示，不受訂單資訊開關影響
       // 屬性可為單行字串或多行陣列（例：['熟度：全熟', '客製化：不加洋蔥, 小辣']）
@@ -1136,10 +1466,23 @@ function renderDropdownMenu(order) {
   const actions = [];
   if (HAS_PRINTER) actions.push({ key:'reprint', labelKey:'actionReprint' });  // 需出單機
   if (HAS_CDS) actions.push({ key:'call', labelKey:'actionCall' });            // 有連動 CDS
-  if (!actions.length) return null;
-  return h('div', { class:'menu up v2-dropdown-in' },
-    actions.map(a => h('button', { class:'btn gray', text:t(state.lang, a.labelKey),
-      onclick:() => handleAction(a.key, order) })));
+  const items = actions.map(a => h('button', { class:'btn gray', text:t(state.lang, a.labelKey),
+    onclick:() => handleAction(a.key, order) }));
+
+  // PRD §3.4 — 退單：後結限定（§1.5 後結內用僅 POS 內用有此情境）。
+  // PRD §3.5 #4 — 危險操作置於選單最底，以分隔線與變色隔開。
+  if (POSTPAY_DINEIN && order.type === 'dine-in') {
+    if (items.length) items.push(h('div', { class:'menu-sep', 'aria-hidden':'true' }));
+    items.push(h('button', {
+      class:'btn danger', text:t(state.lang, 'actionRefund'),
+      disabled: !!order.isSplit,                                   // 『已拆單訂單』Disable
+      title: order.isSplit ? t(state.lang, 'splitOrder') : '',
+      onclick: order.isSplit ? null : () => handleAction('refund', order),
+    }));
+  }
+
+  if (!items.length) return null;
+  return h('div', { class:'menu up v2-dropdown-in' }, items);
 }
 
 /* ── OrderCard (Figma 32:210) ── */
@@ -1149,16 +1492,19 @@ function renderOrderCard(order, opts) {
   const paid = order.paid !== false;
   const closed = !!order.completedAt;          // 已消單
   const ready = !!order.called && !closed;     // 待取餐（已消單就不再套用待取餐配色）
+  // 後結模式下已叫號的訂單，卡片不整張轉藍 ——
+  // 底部藍色「已取餐」CTA 已足以辨識，整張高亮是多餘的視覺噪音。
+  const readyFrame = ready && !POSTPAY_DINEIN;
   const inSearch = !!opts.search;
   const itemOpts = {
     hideCompletedItems: inSearch ? false : s.hideCompletedItems,
     readonly: inSearch,
   };
 
-  const groups = buildGroups(order.items, s.mergeItems);
+  const groups = buildGroups(order, s.mergeItems);
 
   const card = h('div', {
-      class:'card' + (ready ? ' ready' : '') + (seenCardIds.has(order.id) ? '' : ' v2-slide-in'),
+      class:'card' + (readyFrame ? ' ready' : '') + (seenCardIds.has(order.id) ? '' : ' v2-slide-in'),
       'data-oid':order.id,
     },
     /* Header */
@@ -1307,7 +1653,7 @@ function renderSettingsModal() {
 
       // PRD §4 — 點「確認」才儲存
       h('div', { class:'modal-actions' },
-        h('button', { class:'btn gray', style:'flex:1', text:t(lang, 'cancel'), onclick: cancelSettings }),
+        h('button', { class:'btn gray', style:'flex:1', text:t(lang, 'close'), onclick: cancelSettings }),
         h('button', { class:'btn brand', style:'flex:1', text:t(lang, 'confirm'), onclick: commitSettings }))));
 }
 
@@ -1332,6 +1678,52 @@ function renderReprintDialog() {
         h('button', { class:'btn gray', style:'flex:1', text:t(state.lang, 'cancel'), onclick: close }),
         h('button', { class:'btn brand', style:'flex:1', text:t(state.lang, 'confirm'),
           disabled: !rp.kitchen && !rp.sticker, onclick: doReprint }))));
+}
+
+/* ── 退單二次確認（PRD §3.4「需二次確認」／§3.5「二次確認只保留兩處」）── */
+function renderRefundDialog() {
+  const rf = state.refund;
+  if (!rf.open) return null;
+  const lang = state.lang;
+  const order = findOrder(rf.orderId);
+  const close = () => { state.refund = { open:false, orderId:null }; render(); };
+
+  return h('div', { class:'modal-overlay', onclick: close },
+    h('div', { class:'modal confirm-dialog', onclick:(e) => e.stopPropagation() },
+      h('div', { class:'modal-title', text:t(lang, 'refundTitle') }),
+      h('div', { class:'confirm-body' },
+        order ? h('span', { class:'c-num', text:order.orderNumber + '　' }) : null,
+        t(lang, 'refundDesc')),
+      h('div', { class:'modal-actions' },
+        h('button', { class:'btn gray', style:'flex:1', text:t(lang, 'cancel'), onclick: close }),
+        h('button', { class:'btn danger', style:'flex:1', text:t(lang, 'actionRefund'),
+          onclick: doRefund }))));
+}
+
+/* ── 通知 Dialog（PRD §2.3）──────────────────────────────────
+   標題「通知」；內容條列 通知時間 ＋ 事件內容；
+   左下「關閉」、右下「全部已讀」（無未讀時 disable）。            */
+function renderNotifyDialog() {
+  if (!state.notifOpen) return null;
+  const lang = state.lang;
+  const list = state.notifications;
+  const unread = unreadCount();
+
+  return h('div', { class:'modal-overlay', onclick: closeNotify },
+    h('div', { class:'modal notif-dialog', onclick:(e) => e.stopPropagation() },
+      h('div', { class:'modal-title', text:t(lang, 'notifyTitle') }),
+      list.length
+        ? h('div', { class:'notif-list' },
+            list.map(n => h('div', { class:'notif-item ' + (n.read ? 'is-read' : 'unread') },
+              h('span', { class:'notif-dot', 'aria-hidden':'true' }),
+              h('div', { class:'notif-body' },
+                h('div', { class:'notif-time', text:fmtSchedule(n.time) }),
+                h('div', { class:'notif-text', text:(n[lang] || n.zh) })))))
+        : h('div', { class:'notif-empty', text:t(lang, 'noNotifications') }),
+      h('div', { class:'modal-actions' },
+        h('button', { class:'btn gray', style:'flex:1', text:t(lang, 'close'), onclick: closeNotify }),
+        h('button', { class:'btn brand', style:'flex:1', text:t(lang, 'markAllRead'),
+          disabled: !unread, onclick: markAllRead }))));
 }
 
 /* ── Grid + 翻頁（PRD §2.1）──────────────────────────────────
@@ -1415,9 +1807,7 @@ function renderSearchDialog() {
             ? h('button', { class:'btn gray', style:'padding:12px 20px;font-size:20px',
                 onclick:() => { sc.selected = null; bumpSearchIdle(); render(); } },
                 icon('chevronLeft', 20), t(state.lang, 'backToList'))
-            : null,
-          h('button', { class:'btn gray', style:'padding:12px 20px', text:t(state.lang, 'close'),
-            onclick:() => { closeSearch(); render(); } }))),
+            : null)),
       h('div', { class:'dlg-cols' },
         h('div', { class:'dlg-left' }, renderSearchInput()),
         h('div', { class:'dlg-right' }, renderSearchResult()))));
@@ -1436,8 +1826,12 @@ function renderSearchInput() {
       h('button', { class:'key', text:'0', onclick:() => keyPress('0') }),
       h('button', { class:'key', 'aria-label':'backspace', onclick:() => keyPress('back') },
         icon('backspace', 32))),
-    h('button', { class:'btn brand dlg-go', style:'width:100%', text:t(state.lang, 'keySearch'),
-      disabled: !sc.query, onclick: runSearch }),
+    // 離開類按鈕一律在左下角，主要動作在右下角（同設定／補印／通知 Dialog）
+    h('div', { class:'dlg-actions' },
+      h('button', { class:'btn gray', style:'flex:1', text:t(state.lang, 'close'),
+        onclick:() => { closeSearch(); render(); } }),
+      h('button', { class:'btn brand', style:'flex:1', text:t(state.lang, 'keySearch'),
+        disabled: !sc.query, onclick: runSearch })),
   ];
 }
 
@@ -1471,7 +1865,9 @@ function renderApp() {
         renderGrid(),
         renderPager())),
     renderSearchDialog(),
+    renderNotifyDialog(),
     renderReprintDialog(),
+    renderRefundDialog(),
     renderSettingsModal());
 }
 
@@ -1595,7 +1991,8 @@ document.addEventListener('mousedown', (e) => {
 }, true);
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
-  if (state.menuOpen) { state.menuOpen = null; render(); }
+  if (state.menuOpen) { state.menuOpen = null; render(); return; }
+  if (state.notifOpen) { closeNotify(); }
 });
 
 /* ═══ Go ═══ */
