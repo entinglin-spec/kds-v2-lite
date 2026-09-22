@@ -36,8 +36,10 @@
   --r-xs:4px; --r-md:8px; --r-xl:16px; --r-full:9999px;
   /* Shadow4 */
   --shadow4:0px 24px 40px rgba(24,24,27,0.1), 0px 0px 1px rgba(24,24,27,0.1);
-  /* Font scale multiplier (settings) */
-  --fs:1;
+  /* 設計稿 Font Size token：品項字體大小 S / M / L（由設定寫入，預設 M）
+     Item-Text      24 / 32 / 36
+     Attribute-Text 20 / 24 / 28 */
+  --item-fs:32px; --attr-fs:24px;
 }
 
 /* ── Light theme ───────────────────────────────────────────── */
@@ -56,6 +58,7 @@ html[data-theme="light"]{
   --meta-bg:#F5F8F9;
   --meta-ready-bg:#EAF2FB;
   --state-ready:#5292D9;
+  --notif-unread-bg:#E1F2F0;   /* 設計稿：通知未讀卡片底色（外框與圓點用 brand-primary #58B6A8）*/
   --seat:#D0342C;            /* 保留：PRD §2.2 的後結座位紅字。目前不顯示（已由加點標籤取代） */
   --toast-bg:#272A3A;
   --toast-fg:#FFFFFF;
@@ -84,6 +87,7 @@ html[data-theme="dark"]{
   --meta-bg:#2A2F3B;
   --meta-ready-bg:#16304A;
   --state-ready:#5292D9;
+  --notif-unread-bg:#16332F;   /* 深色模式對應色，維持與淺色相同的「淡品牌綠」語意 */
   --seat:#FF8A80;            /* 深色模式改用亮紅，對 surface ≈ 7:1 */
   --toast-bg:#404656;
   --toast-fg:#FFFFFF;
@@ -221,11 +225,12 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .result-num{font-size:24px;font-weight:700;color:var(--text);flex:1 0 0;min-width:0;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .result-state{font-size:20px;color:var(--text-sub);white-space:nowrap;flex-shrink:0;}
-.tag-done{background:var(--surface-alt);color:var(--text-sub);font-size:calc(20px * var(--fs));
+.tag-done{background:var(--surface-alt);color:var(--text-sub);font-size:20px;
   font-weight:700;padding:4px 8px;border-radius:var(--r-md);white-space:nowrap;}
 
 /* ═══ Grid ═══ */
-.grid{flex:1;padding:20px;overflow:hidden;display:grid;gap:20px;
+/* 設計稿：訂單區外距與卡片間距依版面密度 1×4 20px / 1×5 16px / 1×6 12px */
+.grid{flex:1;padding:var(--grid-pad,20px);overflow:hidden;display:grid;gap:var(--grid-pad,20px);
   grid-template-columns:repeat(var(--cols,4),minmax(0,1fr));grid-template-rows:minmax(0,1fr);}
 .empty{margin:auto;color:var(--text-sub);font-size:24px;font-weight:400;grid-column:1 / -1;}
 
@@ -244,7 +249,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   padding:12px;display:flex;flex-direction:column;gap:8px;}
 .card-head-row{display:flex;align-items:center;gap:8px;width:100%;justify-content:space-between;}
 .card-title{display:flex;align-items:center;gap:8px;flex:1 0 0;min-width:0;}
-.card-num{color:var(--text);font-size:calc(var(--num-size,32px) * var(--fs));font-weight:700;
+.card-num{color:var(--text);font-size:var(--num-size,28px);font-weight:700;
   white-space:nowrap;overflow:hidden;flex:0 1 auto;min-width:0;}
 /* 內容放不下時：先沿既有字級級距縮字，畫面保持靜止；
    縮到最小仍放不下才捲一次露出結尾，之後停住不再動。 */
@@ -262,7 +267,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   .mq.marquee > .mq-track{animation:none;transform:translateX(var(--mq-shift,0));}
 }
 /* 空間不足時桌號先讓位，訂單編號（恆顯示）最後才截斷 */
-.card-table{color:var(--text-sub);font-size:calc(20px * var(--fs));font-weight:400;white-space:nowrap;
+.card-table{color:var(--text-sub);font-size:20px;font-weight:400;white-space:nowrap;
   flex:0 500 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .badges{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .paid-icon{color:#71717A;display:inline-flex;align-items:center;justify-content:center;}
@@ -271,9 +276,9 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;}
 .card.ready .card-meta{background:var(--meta-ready-bg);}
 .card-meta .m-time{display:inline-flex;align-items:center;gap:4px;color:var(--text);
-  font-size:calc(20px * var(--fs));font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  font-size:20px;font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .card-meta .m-sched{display:inline-flex;align-items:center;gap:4px;color:var(--text);
-  font-size:calc(20px * var(--fs));font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;
+  font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;
   min-width:0;overflow:hidden;}
 .card-meta .m-sched > .icon{flex-shrink:0;}
 .card-meta .m-sched > .mq{flex:0 1 auto;}
@@ -292,7 +297,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .note{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
   display:flex;gap:8px;align-items:flex-start;width:100%;}
 .note .n-icon{color:var(--text);flex-shrink:0;display:inline-flex;}
-.note-body{flex:1 0 0;min-width:0;color:var(--text);font-size:calc(20px * var(--fs));font-weight:400;line-height:1.3;}
+.note-body{flex:1 0 0;min-width:0;color:var(--text);font-size:20px;font-weight:400;line-height:1.3;}
 .note-toggle{background:transparent;border:none;padding:0;cursor:pointer;color:var(--text);display:inline-flex;flex-shrink:0;}
 
 /* ═══ OrderItem (Figma 31:141) ═══ */
@@ -307,16 +312,18 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .item.is-done .item-bar{background:var(--g3);}
 .item-main{display:flex;flex-direction:column;gap:8px;align-items:flex-start;flex:1 0 0;min-width:0;}
 .item-row{display:flex;gap:8px;align-items:center;width:100%;}
-.item-name{flex:1 1 auto;min-width:2.5em;color:var(--text);font-size:calc(24px * var(--fs));font-weight:700;line-height:1.1;}
+.item-name{flex:1 1 auto;min-width:2.5em;color:var(--text);font-size:var(--item-fs,32px);font-weight:700;line-height:1.1;}
 /* 加點標籤（品項層級）—— 外框線而非實心：這是標籤不是按鈕，實心品牌綠會跟「出餐」CTA 混淆。
    也不用紅色：紅色已指派給危險操作（PRD §5.3 一色一義）。*/
 .item-addon{background:transparent;color:var(--brand-primary);border:2px solid var(--brand-primary);
-  font-size:calc(16px * var(--fs));font-weight:700;padding:0 6px;border-radius:var(--r-xs);
+  font-size:16px;font-weight:700;padding:0 6px;border-radius:var(--r-xs);
   white-space:nowrap;flex-shrink:0;line-height:1.5;}
 .item.is-done .item-addon{color:var(--text-disable);border-color:var(--text-disable);}
-.item-qty{color:var(--text);font-size:calc(24px * var(--fs));font-weight:700;white-space:nowrap;flex-shrink:0;}
+.item-qty{color:var(--text);font-size:24px;font-weight:700;white-space:nowrap;flex-shrink:0;}
 .item.is-done .item-name,.item.is-done .item-qty{color:var(--text-disable);}
-.item-notes{color:var(--text-sub);font-size:calc(20px * var(--fs));font-weight:400;width:100%;line-height:1.3;}
+.item-notes{color:var(--text-sub);font-size:20px;font-weight:400;width:100%;line-height:1.3;}
+/* PRD：「品項字體大小」只影響品項名稱與屬性名稱，備註與其他資訊維持固定字級 */
+.item-notes.item-attr{font-size:var(--attr-fs,24px);}
 .item.is-done .item-notes{color:var(--text-disable);}
 
 /* ═══ Checkbox (Figma 56:1531) ═══ */
@@ -326,7 +333,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .cbx.checked.dim{background:var(--t-disable);}
 
 /* ═══ Button (Figma 7:1286) ═══ */
-.btn{border:none;padding:16px;border-radius:var(--r-md);font-size:calc(24px * var(--fs));font-weight:700;
+.btn{border:none;padding:16px;border-radius:var(--r-md);font-size:24px;font-weight:700;
   cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;user-select:none;}
 .btn.full{flex:1 0 0;}
 .btn.brand{background:var(--cta-brand-bg);color:var(--white);}
@@ -369,18 +376,6 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .switch i{position:absolute;top:3px;left:3px;width:22px;height:22px;background:var(--white);border-radius:var(--r-full);
   box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .18s ease-out;}
 .switch.on i{left:23px;}
-.scalebar{padding:4px 12px 0;}
-.scale-track{position:relative;height:24px;}
-.scale-bg{position:absolute;left:0;right:0;top:50%;height:6px;background:var(--surface-alt);border-radius:var(--r-full);transform:translateY(-50%);}
-.scale-fill{position:absolute;left:0;top:50%;height:6px;background:var(--brand-primary);border-radius:var(--r-full);transform:translateY(-50%);transition:width .18s ease-out;}
-.scale-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;padding:0;border-radius:var(--r-full);
-  border:none;background:var(--border);cursor:pointer;outline:none;transition:width .18s ease-out,height .18s ease-out,background .18s;}
-.scale-dot.filled{background:var(--brand-primary);}
-.scale-dot.active{width:22px;height:22px;border:3px solid var(--brand-primary);background:var(--surface);box-shadow:0 2px 6px rgba(88,182,168,.45);}
-.scale-labels{display:flex;justify-content:space-between;margin-top:14px;}
-.scale-labels button{background:transparent;border:none;padding:2px 6px;cursor:pointer;font-size:13px;color:var(--text-sub);
-  font-weight:400;min-width:60px;text-align:center;transition:color .18s;font-variant-numeric:tabular-nums;white-space:nowrap;}
-.scale-labels button.active{color:var(--brand-primary);font-weight:700;}
 .modal-actions{display:flex;gap:12px;}
 .modal-actions .btn{font-size:20px;padding:14px;}
 .modal.reprint-dialog{width:360px;gap:12px;}
@@ -394,10 +389,11 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .modal.notif-dialog{width:560px;gap:16px;}
 .notif-list{display:flex;flex-direction:column;gap:12px;max-height:52vh;overflow-y:auto;}
 .notif-item{background:var(--page);border:2px solid var(--border);border-radius:var(--r-md);padding:12px 16px;
-  display:flex;align-items:flex-start;gap:12px;}
-.notif-item.unread{background:var(--meta-ready-bg);border-color:var(--state-ready);}
+  display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;font-family:inherit;}
+.notif-item.unread{background:var(--notif-unread-bg);border-color:var(--brand-primary);cursor:pointer;}
+.notif-item.unread:active{background:var(--surface-alt);}
 .notif-dot{width:10px;height:10px;border-radius:var(--r-full);background:transparent;flex-shrink:0;margin-top:9px;}
-.notif-item.unread .notif-dot{background:var(--state-ready);}
+.notif-item.unread .notif-dot{background:var(--brand-primary);}
 .notif-body{flex:1 0 0;min-width:0;display:flex;flex-direction:column;gap:4px;}
 .notif-time{font-size:16px;font-weight:400;color:var(--text-sub);font-variant-numeric:tabular-nums;}
 .notif-text{font-size:20px;font-weight:700;color:var(--text);line-height:1.3;word-break:break-word;}
@@ -429,21 +425,19 @@ const STR = {
     confirm:'確認', cancel:'取消', itemMemo:'備註',
     toastServed:'已出餐', toastServedCalled:'已出餐並叫號',
     toastUndone:'已復原上一步', toastNoUndo:'沒有可復原的動作', toastRefreshed:'已重新整理',
-    settingsTitle:'設定', fontScale:'字體大小', close:'關閉',
+    settingsTitle:'設定', fontScale:'品項字體大小', close:'關閉',
     noOrders:'暫無訂單',
     searchTitle:'搜尋訂單', searchHint:'輸入訂單編號或電話號碼',
     searchIdle:'輸入訂單編號或電話號碼後按「搜尋」', backToList:'返回清單',
     keyClear:'清除', keySearch:'搜尋',
     foundN:'找到 {n} 筆', noResult:'查無訂單',
     stateCooking:'製作中', stateReady:'待取餐', stateDone:'已完成',
-    themeMode:'主題', themeLight:'淺色', themeDark:'深色',
     densityLabel:'版面密度', mergeItems:'合併相同品項',
     prevPage:'上一頁', nextPage:'下一頁',
     sortLabel:'訂單排序', sortAsc:'時間正序', sortDesc:'時間倒序',
     showOrderInfo:'訂單資訊顯示', notifyNewOrder:'通知提示',
-    sizeSmall:'小', sizeMedium:'中', sizeLarge:'大', sizeXLarge:'特大',
+    sizeSmall:'小', sizeMedium:'中', sizeLarge:'大',
     paid:'已付款', unpaid:'未付款',
-    showCompletedItems:'顯示已完成品項',
     // 通知 / 電量（PRD §2.3 Toolbar）
     notifyTitle:'通知', markAllRead:'全部已讀', noNotifications:'目前沒有通知',
     undoTitle:'回上一步', refreshTitle:'重新整理',
@@ -470,21 +464,19 @@ const STR = {
     confirm:'Confirm', cancel:'Cancel', itemMemo:'Note',
     toastServed:'Served', toastServedCalled:'Served & called',
     toastUndone:'Undone', toastNoUndo:'Nothing to undo', toastRefreshed:'Refreshed',
-    settingsTitle:'Settings', fontScale:'Font size', close:'Close',
+    settingsTitle:'Settings', fontScale:'Item font size', close:'Close',
     noOrders:'No orders',
     searchTitle:'Search Order', searchHint:'Enter order number or phone',
     searchIdle:'Enter a number, then press Search', backToList:'Back to list',
     keyClear:'Clear', keySearch:'Search',
     foundN:'{n} found', noResult:'No order found',
     stateCooking:'Cooking', stateReady:'Ready', stateDone:'Completed',
-    themeMode:'Theme', themeLight:'Light', themeDark:'Dark',
     densityLabel:'Layout density', mergeItems:'Merge duplicate items',
     prevPage:'Previous page', nextPage:'Next page',
     sortLabel:'Order sort', sortAsc:'Oldest first', sortDesc:'Newest first',
     showOrderInfo:'Show order info', notifyNewOrder:'New-order voice alert',
-    sizeSmall:'S', sizeMedium:'M', sizeLarge:'L', sizeXLarge:'XL',
+    sizeSmall:'S', sizeMedium:'M', sizeLarge:'L',
     paid:'Paid', unpaid:'Unpaid',
-    showCompletedItems:'Show Completed Items',
     // 通知 / 電量（PRD §2.3 Toolbar）
     notifyTitle:'Notifications', markAllRead:'Mark all read', noNotifications:'No notifications',
     undoTitle:'Undo', refreshTitle:'Refresh',
@@ -535,14 +527,14 @@ function mkOrders() {
         { id:'i6', name:'老虎蝦', qty:1, notes:'' },
       ]},
     { id:'ord-003', tableNumber:'#0040', orderNumber:'#00002904', type:'ubereats', source:'ubereats',
-      startTime: now - 7 * MIN, paid:true,
+      startTime: now - 7 * MIN, scheduledTime: now + 18 * MIN, paid:true,
       customer:{ name:'陳小明', phone:'0912-345-678', address:'台北市大安區忠孝東路四段100號3樓', note:'不需餐具' },
       orderNotes:'請盡快送到，有小孩等著吃', items:[
         { id:'i7', name:'排骨便當', qty:3, notes:'' },
         { id:'i8', name:'雞腿便當', qty:2, notes:'不要香菜' },
       ]},
     { id:'ord-004', tableNumber:'C1', orderNumber:'#0984-jxkr', type:'foodpanda', source:'pos',
-      startTime: now - 4 * MIN, paid:false,
+      startTime: now - 4 * MIN, scheduledTime: now + 12 * MIN, paid:false,
       customer:{ name:'林美華', phone:'0933-888-123' },
       orderNotes:'', items:[
         { id:'i9', name:'珍珠奶茶', qty:2, notes:'少糖去冰' },
@@ -572,7 +564,7 @@ function mkOrders() {
       ]},
     // 外送（店家自送，非外送平台）
     { id:'ord-008', tableNumber:'#0043', orderNumber:'#0043', type:'delivery', source:'pos',
-      startTime: now - 6 * MIN, paid:false,
+      startTime: now - 6 * MIN, scheduledTime: now + 25 * MIN, paid:false,
       // 與 #0984-jxkr 同一位客人（同電話）—— 用來 demo 搜尋命中多筆
       customer:{ name:'林美華', phone:'0933-888-123', address:'台北市松山區八德路三段12號' },
       orderNotes:'', items:[
@@ -597,7 +589,13 @@ function mkOrders() {
         { id:'r12', name:'控肉飯', qty:1, notes:'' },
       ]},
   ];
-  return raw.map(o => ({ ...o, items: expandQty(o.items, false) }));
+  // 外送（自送）／Uber Eats／foodpanda 一律顯示預約（預計取餐）時間；
+  // 平台單實務上都帶時間，資料缺值時以進單 +30 分鐘補上，避免卡片沒有時間可顯示
+  return raw.map(o => ({
+    ...o,
+    scheduledTime: o.scheduledTime || (isDeliveryType(o.type) ? o.startTime + 30 * MIN : undefined),
+    items: expandQty(o.items, false),
+  }));
 }
 
 // 數量 >1 展開成 N 列 qty 1，讓每一份可獨立追蹤
@@ -733,6 +731,10 @@ const CHANNEL_TILE = {
   foodpanda:  { kind:'logo', color:'var(--svc-foodpanda)', svg:LOGO_FOODPANDA },
 };
 
+/* 外送類通道（自送＋外送平台）—— 卡片一律顯示預約／預計取餐時間 */
+const DELIVERY_TYPES = ['delivery', 'ubereats', 'foodpanda'];
+function isDeliveryType(type) { return DELIVERY_TYPES.indexOf(type) !== -1; }
+
 /* ───────────────────────── utils/time ─────────────────────────
    PRD §2.2 — 進單時間 HH:MM，24 小時制。
    PRD §5.4 — 預約取餐時間，非當日需一併顯示日期。
@@ -800,8 +802,14 @@ function append(el, child) {
 }
 
 /* ───────────────────────── App state ───────────────────────── */
+// 設計稿 Font Size token —— 品項名稱（Item-Text）與屬性（Attribute-Text）
+const ITEM_FONT_SIZE = {
+  s: { item:24, attr:20 },
+  m: { item:32, attr:24 },
+  l: { item:36, attr:28 },
+};
 const DEFAULT_SETTINGS = {
-  fontScale: 1,
+  itemFontSize: 'm',   // PRD §4 — 品項字體大小 S / M / L，預設 M（字級見 ITEM_FONT_SIZE）
   theme: 'light',   // 'light' | 'dark'
   density: 4,       // PRD §2.1 / §4 — 版面密度 1×4 / 1×5 / 1×6，預設 1×4
   mergeItems: true,        // PRD §4 — 預設開
@@ -894,6 +902,12 @@ const state = {
   noteCollapsed: {},    // orderId -> true when the customer note is collapsed
 };
 
+// 語言與主題不在 PRD 設定清單內，設定頁已不提供切換；
+// demo 需要時用網址參數：?lang=en（英文介面）、?theme=dark（深色）
+const URL_FLAGS = location.search + location.hash;
+if (/(?:[?#&])lang=en(?:&|$)/.test(URL_FLAGS)) state.lang = 'en';
+if (/(?:[?#&])theme=dark(?:&|$)/.test(URL_FLAGS)) state.settings.theme = 'dark';
+
 let knownOrderIds = new Set(state.orders.map(o => o.id));
 const itemLock = {};           // "orderId::itemId" -> 上次推進時間
 let seenCardIds = new Set();   // suppresses replaying slide-in on every re-render
@@ -943,6 +957,12 @@ function findOrder(id) { return state.orders.find(o => o.id === id); }
 function unreadCount() { return state.notifications.filter(n => !n.read).length; }
 function openNotify() { state.notifOpen = true; state.menuOpen = null; render(); }
 function closeNotify() { state.notifOpen = false; render(); }
+function markRead(id) {
+  const n = state.notifications.find(x => x.id === id);
+  if (!n || n.read) return;
+  n.read = true;
+  render();
+}
 function markAllRead() {
   if (!unreadCount()) return;
   state.notifications.forEach(n => { n.read = true; });
@@ -1452,7 +1472,7 @@ function renderOrderItem(order, item, position, opts) {
         h('span', { class:'item-qty', text:'×' + item.qty })),
       // PRD §2.2 — 品項名稱 ＋ 屬性 ＋ 數量 ＋ 品項備註；備註恆顯示，不受訂單資訊開關影響
       // 屬性可為單行字串或多行陣列（例：['熟度：全熟', '客製化：不加洋蔥, 小辣']）
-      attrLines(item).map(line => h('div', { class:'item-notes', text:line })),
+      attrLines(item).map(line => h('div', { class:'item-notes item-attr', text:line })),
       item.memo ? h('div', { class:'item-notes', text:t(state.lang, 'itemMemo') + '：' + item.memo }) : null));
 
   attachTap(row, mark);
@@ -1489,7 +1509,9 @@ function renderDropdownMenu(order) {
 function renderOrderCard(order, opts) {
   opts = opts || {};
   const s = state.settings;
-  const paid = order.paid !== false;
+  // 右上角錢錢 icon 代表「已付款」——
+  // 後結內用單在廚房出餐時還沒結帳，因此一律不顯示（前結內用、外帶、外送仍依付款狀態）
+  const paid = order.paid !== false && !(POSTPAY_DINEIN && order.type === 'dine-in');
   const closed = !!order.completedAt;          // 已消單
   const ready = !!order.called && !closed;     // 待取餐（已消單就不再套用待取餐配色）
   // 後結模式下已叫號的訂單，卡片不整張轉藍 ——
@@ -1525,11 +1547,11 @@ function renderOrderCard(order, opts) {
       h('div', { class:'card-meta' },
         h('span', { class:'m-time' }, icon('clock', 20), fmtClock(order.startTime)),
         order.scheduledTime
+          // 設計稿：日曆 icon 已表達「預約」，不再重複顯示文字標籤
           ? h('span', { class:'m-sched', title:t(state.lang, 'scheduled') },
               icon('calendar', 20),
               h('span', { class:'mq' },
-                h('span', { class:'mq-track',
-                  text:t(state.lang, 'scheduled') + ' ' + fmtSchedule(order.scheduledTime) })))
+                h('span', { class:'mq-track', text:fmtSchedule(order.scheduledTime) })))
           : null)),
 
     /* Item list */
@@ -1580,29 +1602,6 @@ function toggleSwitch(checked, onChange) {
     onclick:() => onChange(!checked),
   }, h('i'));
 }
-function scaleStepBar(steps, labels, value, onChange) {
-  let activeIdx = 0;
-  steps.forEach((s, i) => {
-    if (Math.abs(s - value) < Math.abs(steps[activeIdx] - value)) activeIdx = i;
-  });
-  const fillPct = (activeIdx / (steps.length - 1)) * 100;
-  return h('div', { class:'scalebar' },
-    h('div', { class:'scale-track' },
-      h('div', { class:'scale-bg' }),
-      h('div', { class:'scale-fill', style:'width:' + fillPct + '%' }),
-      steps.map((s, i) => h('button', {
-        class:'scale-dot' + (i === activeIdx ? ' active' : i < activeIdx ? ' filled' : ''),
-        style:'left:' + ((i / (steps.length - 1)) * 100) + '%',
-        'aria-label': s + 'x',
-        onclick:() => onChange(s),
-      }))),
-    h('div', { class:'scale-labels' },
-      steps.map((s, i) => h('button', {
-        class: i === activeIdx ? 'active' : '',
-        text: labels[i],
-        onclick:() => onChange(s),
-      }))));
-}
 function renderSettingsModal() {
   if (!state.settingsOpen || !state.draft) return null;
   const s = state.draft.settings;
@@ -1616,40 +1615,34 @@ function renderSettingsModal() {
     h('div', { class:'modal', onclick:(e) => e.stopPropagation() },
       h('div', { class:'modal-title', text:t(lang, 'settingsTitle') }),
 
-      field('Language / 語言', segControl(
-        [{ value:'zh', label:'繁體中文' }, { value:'en', label:'English' }],
-        lang, v => { state.draft.lang = v; render(); })),
-
-      field(t(lang, 'themeMode'), segControl(
-        [{ value:'light', label:t(lang, 'themeLight') },
-         { value:'dark',  label:t(lang, 'themeDark') }],
-        s.theme, v => setSetting('theme', v))),
-
+      // PRD 設定項清單與順序：版面密度 → 品項字體大小 → 訂單排序 →
+      // 訂單資訊顯示 → 合併相同品項 → 通知提示 → 啟用商店 → 軟體更新。
+      // 語言、主題、顯示已完成品項不在清單內，已移除（demo 可用 ?lang=en / ?theme=dark）。
       field(t(lang, 'densityLabel'), segControl(
         [{ value:4, label:'1×4' }, { value:5, label:'1×5' }, { value:6, label:'1×6' }],
         s.density, v => setSetting('density', v))),
+
+      field(t(lang, 'fontScale'), segControl(
+        [{ value:'s', label:t(lang, 'sizeSmall') },
+         { value:'m', label:t(lang, 'sizeMedium') },
+         { value:'l', label:t(lang, 'sizeLarge') }],
+        s.itemFontSize, v => setSetting('itemFontSize', v))),
 
       field(t(lang, 'sortLabel'), segControl(
         [{ value:'asc',  label:t(lang, 'sortAsc') },
          { value:'desc', label:t(lang, 'sortDesc') }],
         s.sort, v => setSetting('sort', v))),
 
-      row(t(lang, 'mergeItems'),
-        toggleSwitch(!!s.mergeItems, v => setSetting('mergeItems', v))),
-
       row(t(lang, 'showOrderInfo'),
         toggleSwitch(!!s.showOrderInfo, v => setSetting('showOrderInfo', v))),
+
+      row(t(lang, 'mergeItems'),
+        toggleSwitch(!!s.mergeItems, v => setSetting('mergeItems', v))),
 
       row(t(lang, 'notifyNewOrder'),
         toggleSwitch(!!s.notify, v => setSetting('notify', v))),
 
-      row(t(lang, 'showCompletedItems'),
-        toggleSwitch(!s.hideCompletedItems, v => setSetting('hideCompletedItems', !v))),
-
-      field(t(lang, 'fontScale'), scaleStepBar(
-        [0.8, 1.0, 1.2, 1.4],
-        [t(lang,'sizeSmall'), t(lang,'sizeMedium'), t(lang,'sizeLarge'), t(lang,'sizeXLarge')],
-        s.fontScale, v => setSetting('fontScale', v))),
+      // PRD 另有「啟用商店」「軟體更新」兩項，顯示規格待與 PM 確認後再加回
 
       // PRD §4 — 點「確認」才儲存
       h('div', { class:'modal-actions' },
@@ -1714,7 +1707,10 @@ function renderNotifyDialog() {
       h('div', { class:'modal-title', text:t(lang, 'notifyTitle') }),
       list.length
         ? h('div', { class:'notif-list' },
-            list.map(n => h('div', { class:'notif-item ' + (n.read ? 'is-read' : 'unread') },
+            list.map(n => h(n.read ? 'div' : 'button',
+              n.read
+                ? { class:'notif-item is-read' }
+                : { class:'notif-item unread', onclick:() => markRead(n.id) },
               h('span', { class:'notif-dot', 'aria-hidden':'true' }),
               h('div', { class:'notif-body' },
                 h('div', { class:'notif-time', text:fmtSchedule(n.time) }),
@@ -1740,9 +1736,10 @@ function pageCount(list) {
 
 function renderGrid() {
   const cols = pageSize();
-  // 版面密度越高卡片越窄，訂單編號字級沿既有級距（lg 32 → sm 24）降一階
+  // 設計稿：訂單編號 28px；訂單區外距／卡片間距依密度 1×4 20 / 1×5 16 / 1×6 12
+  const GRID_PAD = { 4:'20px', 5:'16px', 6:'12px' };
   const grid = h('div', { class:'grid',
-    style:'--cols:' + cols + ';--num-size:' + (cols >= 5 ? '24px' : '32px') });
+    style:'--cols:' + cols + ';--num-size:28px;--grid-pad:' + (GRID_PAD[cols] || '20px') });
   const list = currentList();
 
   if (!list.length) {
@@ -1883,7 +1880,9 @@ function render() {
   const caret = (fkey && 'selectionStart' in active) ? active.selectionStart : null;
 
   document.documentElement.setAttribute('data-theme', state.settings.theme);
-  document.documentElement.style.setProperty('--fs', String(state.settings.fontScale));
+  const fsz = ITEM_FONT_SIZE[state.settings.itemFontSize] || ITEM_FONT_SIZE.m;
+  document.documentElement.style.setProperty('--item-fs', fsz.item + 'px');
+  document.documentElement.style.setProperty('--attr-fs', fsz.attr + 'px');
   state.page = Math.min(state.page, pageCount(currentList()) - 1);
   if (state.page < 0) state.page = 0;
 
@@ -1894,9 +1893,8 @@ function render() {
   //   1. 先沿既有字級級距（32/24/20/16）往下縮，縮得下就完全不動
   //   2. 縮到最小仍放不下，才捲一次露出結尾並停住
   const MQ_SPEED = 50;                 // px / 秒
-  const STEPS_NUM = [32, 24, 20, 16];  // 訂單編號可用字級
+  const STEPS_NUM = [28, 24, 20, 16];  // 訂單編號可用字級（設計稿基準 28px）
   const STEPS_SUB = [20, 16];          // 預約時間等次要資訊
-  const fs = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fs')) || 1;
 
   appRoot.querySelectorAll('.mq').forEach(el => {
     const track = el.firstElementChild;
@@ -1907,9 +1905,9 @@ function render() {
     const steps = el.classList.contains('card-num') ? STEPS_NUM : STEPS_SUB;
     const curPx = parseFloat(getComputedStyle(el).fontSize);
     const target = curPx * (el.clientWidth / track.offsetWidth);
-    const fits = steps.filter(v => v * fs <= target);
+    const fits = steps.filter(v => v <= target);
     const chosen = fits.length ? Math.max(...fits) : Math.min(...steps);
-    if (chosen * fs < curPx) el.style.fontSize = 'calc(' + chosen + 'px * var(--fs))';
+    if (chosen < curPx) el.style.fontSize = chosen + 'px';
 
     // 2. 還是放不下才捲一次
     const over = track.offsetWidth - el.clientWidth;
