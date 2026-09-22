@@ -184,8 +184,8 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .sim-group .seg button{font-size:16px;padding:5px 12px;white-space:nowrap;}
 
 /* ═══ 危險操作（PRD §3.5 #4 — 置於選單最底，以分隔線與變色隔開）═══ */
-.menu-sep{height:1px;background:var(--menu-ring);flex-shrink:0;}
-.btn.danger{background:var(--error-light);color:var(--error-strong);border:1px solid var(--error-strong);}
+.menu-sep{height:2px;background:var(--border);flex-shrink:0;margin:-8px -20px;}
+.btn.danger{background:var(--error-light);color:var(--error-strong);border:2px solid var(--error-strong);}
 .btn.danger:active{background:var(--error-strong);color:var(--white);}
 .btn.danger:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:var(--border);}
 .modal.confirm-dialog{width:420px;gap:12px;}
@@ -340,7 +340,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .btn.brand:active{background:var(--cta-brand-pressed);}
 .btn.blue{background:var(--info);color:var(--white);}
 .btn.blue:active{background:var(--info-dark);}
-.btn.gray{background:var(--dropdown-item-bg);color:var(--text);border:1px solid var(--dropdown-item-border);}
+.btn.gray{background:var(--dropdown-item-bg);color:var(--text);border:2px solid var(--dropdown-item-border);}
 .btn.gray:active{background:var(--dropdown-item-pressed);}
 .btn.square{flex-shrink:0;}
 .btn:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:var(--border);cursor:not-allowed;}
@@ -431,7 +431,7 @@ const STR = {
     searchIdle:'輸入訂單編號或電話號碼後按「搜尋」', backToList:'返回清單',
     keyClear:'清除', keySearch:'搜尋',
     foundN:'找到 {n} 筆', noResult:'查無訂單',
-    stateCooking:'製作中', stateReady:'待取餐', stateDone:'已完成',
+    stateCooking:'製作中', stateReady:'待取餐', stateDone:'已完成', stateRefunded:'已退單',
     densityLabel:'版面密度', mergeItems:'合併相同品項',
     prevPage:'上一頁', nextPage:'下一頁',
     sortLabel:'訂單排序', sortAsc:'時間正序', sortDesc:'時間倒序',
@@ -446,7 +446,7 @@ const STR = {
     simCheckout:'結帳', simPrepay:'前結', simPostpay:'後結',
     // 退單（PRD §3.4 — 後結限定、需二次確認）
     actionRefund:'退單', refundTitle:'確認退單？',
-    refundDesc:'退單後訂單將從畫面移除，廚師不可自行復原，需通知收銀。',
+    refundDescPre:'訂單 ', refundDescPost:' 將被移除。如需復原請聯繫收銀。',
     toastRefunded:'已退單', splitOrder:'已拆單訂單不可退單',
     toastAllRead:'已全部標示為已讀',
     battery:'電量', batteryCycle:'模擬：點擊切換電量斷點', batteryCharging:'充電中',
@@ -470,7 +470,7 @@ const STR = {
     searchIdle:'Enter a number, then press Search', backToList:'Back to list',
     keyClear:'Clear', keySearch:'Search',
     foundN:'{n} found', noResult:'No order found',
-    stateCooking:'Cooking', stateReady:'Ready', stateDone:'Completed',
+    stateCooking:'Cooking', stateReady:'Ready', stateDone:'Completed', stateRefunded:'Refunded',
     densityLabel:'Layout density', mergeItems:'Merge duplicate items',
     prevPage:'Previous page', nextPage:'Next page',
     sortLabel:'Order sort', sortAsc:'Oldest first', sortDesc:'Newest first',
@@ -485,7 +485,7 @@ const STR = {
     simCheckout:'Checkout', simPrepay:'Pre-pay', simPostpay:'Post-pay',
     // 退單（PRD §3.4 — 後結限定、需二次確認）
     actionRefund:'Refund', refundTitle:'Refund this order?',
-    refundDesc:'The order leaves the board. Kitchen staff cannot undo this — notify the cashier.',
+    refundDescPre:'Order ', refundDescPost:' will be removed. Contact the cashier to restore it.',
     toastRefunded:'Refunded', splitOrder:'Split orders cannot be refunded',
     toastAllRead:'All marked as read',
     battery:'Battery', batteryCycle:'Demo: click to step through battery levels', batteryCharging:'Charging',
@@ -1033,6 +1033,16 @@ function pushUndo() {
   state.undo.push(snapshot());
   if (state.undo.length > UNDO_LIMIT) state.undo.shift();
 }
+// PRD §3.4 — 退單不可由廚房復原。
+// 因為復原點存的是整份訂單狀態的快照，光是「不記錄新的復原點」不夠：
+// 按「回上一步」回到退單前的舊快照，一樣會把已退單的訂單救回來。
+// 所以退單時把該筆訂單從所有既有復原點裡抽掉，其他訂單的復原仍然可用。
+function dropFromUndo(orderId) {
+  state.undo.forEach(snap => {
+    snap.orders = snap.orders.filter(o => o.id !== orderId);
+    snap.history = snap.history.filter(o => o.id !== orderId);
+  });
+}
 function handleUndo() {
   if (!state.undo.length) { pushToast(t(state.lang, 'toastNoUndo')); return; }
   const snap = state.undo.pop();
@@ -1142,7 +1152,8 @@ function doRefund() {
   state.refund = { open:false, orderId:null };
   const order = findOrder(id);
   if (!order) { render(); return; }
-  pushUndo();
+  order.refunded = true;   // 併入 history 的副本會帶著這個旗標，搜尋時顯示「已退單」
+  dropFromUndo(id);        // 不記錄復原點，且既有復原點不得救回這筆訂單
   pushToast(`${t(state.lang, 'toastRefunded')} ${order.orderNumber}`);
   render();          // 先收掉確認框
   closeOrder(id);    // 再播卡片淡出
@@ -1214,7 +1225,8 @@ function runSearch() {
   render();
 }
 function orderStateKey(order) {
-  if (order.completedAt) return 'stateDone';
+  // PRD §3.4 — 退單的訂單同樣是已消單，但狀態要顯示「已退單」以區別正常完成
+  if (order.completedAt) return order.refunded ? 'stateRefunded' : 'stateDone';
   return order.called ? 'stateReady' : 'stateCooking';
 }
 
@@ -1540,8 +1552,8 @@ function renderOrderCard(order, opts) {
             ? h('span', { class:'card-table', text:order.tableNumber + (state.lang === 'zh' ? '桌' : '') })
             : null),
         h('div', { class:'badges' },
-          // PRD §2.3.1 — 已消單的訂單於卡片上加「已完成」標示
-          (inSearch && closed) ? h('span', { class:'tag-done', text:t(state.lang, 'stateDone') }) : null,
+          // PRD §2.3.1 — 已消單的訂單於卡片上加狀態標示（已完成／已退單）
+          (inSearch && closed) ? h('span', { class:'tag-done', text:t(state.lang, orderStateKey(order)) }) : null,
           paid ? h('span', { class:'paid-icon', title:t(state.lang, 'paid') }, icon('circleDollarSign', 32)) : null)),
       // PRD §2.2 — 進單時間 HH:MM 恆顯示；預約單一併顯示預約取餐日期／時間
       h('div', { class:'card-meta' },
@@ -1575,7 +1587,7 @@ function renderOrderCard(order, opts) {
       // PRD §5.1.6 — 搜尋結果：製作中→出餐、待取餐→已取餐、已完成→停用
       h('button', {
         class:'btn full ' + (closed ? 'gray' : ready ? 'blue' : 'brand'),
-        text:t(state.lang, closed ? 'stateDone' : ready ? 'pickedUp' : 'serve'),
+        text:t(state.lang, closed ? orderStateKey(order) : ready ? 'pickedUp' : 'serve'),
         disabled: closed,
         onclick: closed ? null : () => {
           if (inSearch) closeSearch();
@@ -1685,8 +1697,9 @@ function renderRefundDialog() {
     h('div', { class:'modal confirm-dialog', onclick:(e) => e.stopPropagation() },
       h('div', { class:'modal-title', text:t(lang, 'refundTitle') }),
       h('div', { class:'confirm-body' },
-        order ? h('span', { class:'c-num', text:order.orderNumber + '　' }) : null,
-        t(lang, 'refundDesc')),
+        t(lang, 'refundDescPre'),
+        order ? h('span', { class:'c-num', text:order.orderNumber }) : null,
+        t(lang, 'refundDescPost')),
       h('div', { class:'modal-actions' },
         h('button', { class:'btn gray', style:'flex:1', text:t(lang, 'cancel'), onclick: close }),
         h('button', { class:'btn danger', style:'flex:1', text:t(lang, 'actionRefund'),
