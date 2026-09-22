@@ -143,6 +143,9 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   background:var(--surface-alt);color:var(--text);display:inline-flex;align-items:center;justify-content:center;
   cursor:pointer;user-select:none;transition:background .08s linear;}
 .iconbtn:active{background:var(--g2);}
+/* Dialog 標題列的 [X]：保留底色，只去掉外框線 */
+.iconbtn.sm{width:48px;height:48px;padding:10px;border:none;}
+.iconbtn.sm .icon{width:28px;height:28px;}
 .iconbtn .icon{width:36px;height:36px;}
 /* 未讀數徽章（Toolbar 通知）*/
 .iconbtn{position:relative;}
@@ -665,6 +668,7 @@ const ICONS = {
   chevronDown:'<polyline points="6 9 12 15 18 9"/>',
   ellipsisV:'<circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/>',
   check:'<polyline points="20 6 9 17 4 12"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
   utensils:'<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
   // 外送＝店家自送。boxicons_scooter-delivery.svg（實心填色，見 SOLID_ICONS）。
   // 原始檔的 fill="white" 已移除，改由外層 currentColor 帶色，深淺模式與色塊才吃得到。
@@ -1625,7 +1629,7 @@ function renderSettingsModal() {
 
   return h('div', { class:'modal-overlay', onclick: cancelSettings },
     h('div', { class:'modal', onclick:(e) => e.stopPropagation() },
-      h('div', { class:'modal-title', text:t(lang, 'settingsTitle') }),
+      dialogHead(t(lang, 'settingsTitle'), cancelSettings),
 
       // PRD 設定項清單與順序：版面密度 → 品項字體大小 → 訂單排序 →
       // 訂單資訊顯示 → 合併相同品項 → 通知提示 → 啟用商店 → 軟體更新。
@@ -1717,7 +1721,7 @@ function renderNotifyDialog() {
 
   return h('div', { class:'modal-overlay', onclick: closeNotify },
     h('div', { class:'modal notif-dialog', onclick:(e) => e.stopPropagation() },
-      h('div', { class:'modal-title', text:t(lang, 'notifyTitle') }),
+      dialogHead(t(lang, 'notifyTitle'), closeNotify),
       list.length
         ? h('div', { class:'notif-list' },
             list.map(n => h(n.read ? 'div' : 'button',
@@ -1805,19 +1809,28 @@ function keyPress(k) {
   render();
 }
 
+/* Dialog 標題列：左標題、右上 [X] 關閉（額外操作放 X 左側）*/
+function dialogHead(titleText, onClose, extra) {
+  const label = t(state.lang, 'close');
+  return h('div', { class:'dlg-head' },
+    h('span', { class:'dlg-title', text:titleText }),
+    h('div', { class:'dlg-head-actions' },
+      extra || null,
+      h('button', { class:'iconbtn sm', title:label, 'aria-label':label, onclick:onClose },
+        icon('x', 28))));
+}
+
 function renderSearchDialog() {
   const sc = state.search;
   if (!sc.open) return null;
   return h('div', { class:'modal-overlay' },          // 無 onclick → 點遮罩不關閉
     h('div', { class:'modal search-dialog' },
-      h('div', { class:'dlg-head' },
-        h('span', { class:'dlg-title', text:t(state.lang, 'searchTitle') }),
-        h('div', { class:'dlg-head-actions' },
-          (sc.selected && sc.results && sc.results.length > 1)
-            ? h('button', { class:'btn gray', style:'padding:12px 20px;font-size:20px',
-                onclick:() => { sc.selected = null; bumpSearchIdle(); render(); } },
-                icon('chevronLeft', 20), t(state.lang, 'backToList'))
-            : null)),
+      dialogHead(t(state.lang, 'searchTitle'), () => { closeSearch(); render(); },
+        (sc.selected && sc.results && sc.results.length > 1)
+          ? h('button', { class:'btn gray', style:'padding:12px 20px;font-size:20px',
+              onclick:() => { sc.selected = null; bumpSearchIdle(); render(); } },
+              icon('chevronLeft', 20), t(state.lang, 'backToList'))
+          : null),
       h('div', { class:'dlg-cols' },
         h('div', { class:'dlg-left' }, renderSearchInput()),
         h('div', { class:'dlg-right' }, renderSearchResult()))));
