@@ -163,7 +163,9 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .battery:hover{outline:1px dashed var(--g4);outline-offset:-1px;}   /* 虛線＝模擬功能，與右上角開關同語彙 */
 .battery:active{opacity:.6;}
 .battery .bat-pct{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;}
-.battery.low{color:var(--warning-strong);}     /* 只換 icon 與文字色，不加底色 */
+/* 20% 與 10% 同樣用紅色警示（只換 icon 與文字色，不加底色）；
+   兩段仍分開掛 class，因為通知文案不同（低於 20% / 低於 10%）*/
+.battery.low,
 .battery.crit{color:var(--error-strong);}
 
 /* ═══ ChannelTabs ═══ */
