@@ -194,7 +194,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .menu-sep{height:2px;background:var(--border);flex-shrink:0;margin:-8px -20px;}
 .btn.danger{background:var(--error-light);color:var(--error-strong);border:2px solid var(--error-strong);}
 .btn.danger:active{background:var(--error-strong);color:var(--white);}
-.btn.danger:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:var(--border);}
+.btn.danger:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:transparent;}
 .modal.confirm-dialog{width:420px;gap:12px;}
 .confirm-body{font-size:20px;line-height:1.4;color:var(--text);}
 .confirm-body .c-num{font-weight:700;}
@@ -254,6 +254,10 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:20px;}
 .pager .page-num{font-size:24px;font-weight:700;color:var(--text);min-width:80px;text-align:center;
   font-variant-numeric:tabular-nums;}
+/* 翻頁箭頭＝按了就執行的動作，用實心灰（同 .btn.gray）；與左側常駐工具列的外框線樣式區隔 */
+.pager .iconbtn{background:var(--dropdown-item-bg);border-color:var(--dropdown-item-border);}
+.pager .iconbtn:active{background:var(--dropdown-item-pressed);}
+.pager .iconbtn:disabled{border-color:transparent;}   /* 停用同 .btn.gray:disabled：淺灰底、無外框 */
 .iconbtn:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:var(--border);cursor:not-allowed;}
 
 /* ═══ OrderCard (Figma 32:210) ═══ */
@@ -357,7 +361,8 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .btn.gray{background:var(--dropdown-item-bg);color:var(--text);border:2px solid var(--dropdown-item-border);}
 .btn.gray:active{background:var(--dropdown-item-pressed);}
 .btn.square{flex-shrink:0;}
-.btn:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:var(--border);cursor:not-allowed;}
+/* 樣式表：實心按鈕停用 —— 底色 #F4F4F5、文字 #D4D4D8、不加外框（灰／綠／藍／紅一致）*/
+.btn:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:transparent;cursor:not-allowed;}
 
 /* ═══ DropdownMenu (Figma 56:2601) ═══ */
 .menu{position:absolute;background:var(--surface);box-shadow:var(--menu-shadow);border:1px solid var(--menu-ring);
