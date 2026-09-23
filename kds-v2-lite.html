@@ -143,21 +143,23 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   background:var(--surface-alt);color:var(--text);display:inline-flex;align-items:center;justify-content:center;
   cursor:pointer;user-select:none;transition:background .08s linear;}
 .iconbtn:active{background:var(--g2);}
-/* Dialog 標題列的 [X]：保留底色，只去掉外框線 */
-.iconbtn.sm{width:48px;height:48px;padding:10px;border:none;}
+/* Dialog 標題列的 [X]：底色／外框與 KDS 灰色按鈕（.btn.gray）一致 */
+.iconbtn.sm{width:48px;height:48px;padding:10px;
+  background:var(--dropdown-item-bg);border:2px solid var(--dropdown-item-border);}
+.iconbtn.sm:active{background:var(--dropdown-item-pressed);}
 .iconbtn.sm .icon{width:28px;height:28px;}
 .iconbtn .icon{width:36px;height:36px;}
 /* 未讀數徽章（Toolbar 通知）*/
 .iconbtn{position:relative;}
 .rail-badge{position:absolute;top:-6px;right:-6px;min-width:26px;height:26px;padding:0 5px;border-radius:var(--r-full);
   background:var(--error-strong);color:var(--white);font-size:16px;font-weight:700;
-  /* 圓圈是 border-box（含 2px 白邊），用 flex 置中才不會被 line-height 推偏 */
+  /* 不加白色外框；用 flex 置中才不會被 line-height 推偏 */
   display:flex;align-items:center;justify-content:center;line-height:1;
-  border:2px solid var(--surface);font-variant-numeric:tabular-nums;}
+  font-variant-numeric:tabular-nums;}
 /* 電量狀態（PRD §2.3 — 低於 20% / 10% 需提示）*/
 .rail-bottom{margin-top:auto;display:flex;flex-direction:column;gap:12px;align-items:center;}
 .battery{width:60px;padding:6px 0 4px;border-radius:var(--r-md);display:flex;flex-direction:column;align-items:center;gap:2px;
-  color:var(--text-sub);user-select:none;
+  color:var(--text);user-select:none;   /* 與側欄 icon 同色 */
   /* 原型模擬用：點擊切換電量斷點。正式版是純狀態顯示，不可點 */
   border:none;background:transparent;font-family:inherit;cursor:pointer;}
 .battery:hover{outline:1px dashed var(--g4);outline-offset:-1px;}   /* 虛線＝模擬功能，與右上角開關同語彙 */
@@ -199,9 +201,10 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 
 /* ═══ 搜尋訂單 Dialog（PRD §2.3.1）═══ */
 /* .modal 的 width 在後面定義，故提高一級選擇器權重 */
-.modal.search-dialog{width:840px;max-width:calc(100vw - 48px);}
-.dlg-cols{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;
-  height:var(--dlg-h,560px);}   /* render() 依主畫面卡片高度寫入 --dlg-h */
+.modal.search-dialog{width:80vw;height:80vh;max-width:none;max-height:none;overflow:hidden;}
+/* 佔畫面 8 成：左欄英數鍵盤（10 欄）、右欄結果卡片，高度填滿 Dialog */
+.dlg-cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;
+  flex:1 1 auto;min-height:0;}
 .dlg-left{display:flex;flex-direction:column;gap:12px;}
 .dlg-actions{margin-top:auto;display:flex;gap:12px;}
 .dlg-right{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0;overflow-y:auto;}
@@ -215,13 +218,16 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:2px;overflow:hidden;}
 /* 注意：修飾詞不可叫 .empty —— 會撞到主畫面空狀態的 .empty{margin:auto} */
 .dlg-display.is-empty{color:var(--text-disable);font-size:20px;font-weight:400;letter-spacing:normal;}
-.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
-  grid-auto-rows:minmax(0,1fr);flex:1 1 auto;min-height:324px;max-height:420px;}
+.keypad{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;
+  grid-auto-rows:minmax(0,1fr);flex:1 1 auto;min-height:280px;max-height:480px;}
+.keypad .key{font-size:28px;min-width:0;}
+.keypad .key.wide{grid-column:span 2;}
 .key{border:1px solid var(--dropdown-item-border);border-radius:var(--r-md);
   background:var(--dropdown-item-bg);color:var(--text);font-size:32px;font-weight:700;cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;user-select:none;}
 .key:active{background:var(--dropdown-item-pressed);}
 .key.label{font-size:20px;}
+.btn.dlg-back{align-self:flex-start;flex-shrink:0;height:48px;padding:0 16px;font-size:20px;}
 .dlg-found{color:var(--text-sub);font-size:20px;}
 .dlg-empty{color:var(--text-sub);font-size:24px;text-align:center;padding:40px 0;}
 .result-row{background:var(--page);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
@@ -301,7 +307,6 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 /* ═══ CustomerNote ═══ */
 .note{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
   display:flex;gap:8px;align-items:flex-start;width:100%;}
-.note .n-icon{color:var(--text);flex-shrink:0;display:inline-flex;}
 .note-body{flex:1 0 0;min-width:0;color:var(--text);font-size:20px;font-weight:400;line-height:1.3;}
 .note-toggle{background:transparent;border:none;padding:0;cursor:pointer;color:var(--text);display:inline-flex;flex-shrink:0;}
 
@@ -556,6 +561,15 @@ function mkOrders() {
         { id:'j7', name:'滷蛋', qty:4, notes:'' },
         { id:'j8', name:'豆腐湯', qty:3, notes:'不要蔥', memo:'裝小碗' },
       ]},
+    // 與 #00002904 同一位客人（同電話 0912-345-678）—— 搜電話命中 3 筆的 demo 之一
+    // called = 已叫號、等客人取餐
+    { id:'ord-010', tableNumber:'#0046', orderNumber:'#0046', type:'takeout', source:'pos',
+      startTime: now - 16 * MIN, paid:true, called:true,
+      customer:{ name:'陳小明', phone:'0912-345-678' },
+      orderNotes:'', items:[
+        { id:'p1', name:'控肉飯', qty:1, notes:'' },
+        { id:'p2', name:'貢丸湯', qty:1, notes:'不要芹菜' },
+      ]},
     // 屬性樣式示範（給開發者看的）：
     //   單層 —— 一個獨立品項帶多行屬性
     //   雙層 —— 套餐：主品項 ＋ attachedToPrev 的附屬品項（左側直條線）
@@ -632,6 +646,19 @@ function mkHistory() {
     items: expandQty([
       { id:'h1', name:'牛肉麵', qty:1, notes:'不加辣' },
       { id:'h2', name:'滷蛋',   qty:2, notes:'' },
+    ], true),
+  }, {
+    // 陳小明（0912-345-678）今天稍早的內用單，已消單 —— 搜電話命中 3 筆的 demo 之一
+    id:'ord-h02', tableNumber:'B4', orderNumber:'#0012', type:'dine-in', source:'pos',
+    startTime: now - 210 * MIN,
+    completedAt: now - 170 * MIN,
+    called: true,
+    paid: true,
+    customer:{ name:'陳小明', phone:'0912-345-678' },
+    orderNotes:'',
+    items: expandQty([
+      { id:'h3', name:'牛肉麵', qty:2, notes:'' },
+      { id:'h4', name:'炒青菜', qty:1, notes:'' },
     ], true),
   }];
 }
@@ -839,8 +866,8 @@ function setCds(v) {
 window.kdsSetCds = (v) => { setCds(v); return HAS_CDS; };
 
 // PRD §2.2 — 後結座位紅字：店家啟用後結內用 ＋ 內用單 ＋ 品項綁定座位。
-// 後結帳支援與否為 PRD §1.3 待確認項，原型用 ?postpay=0 / kdsSetPostpay(false) 關閉。
-let POSTPAY_DINEIN = !/(?:[?#&])postpay=0(?:&|$)/.test(location.search + location.hash);
+// 後結帳支援與否為 PRD §1.3 待確認項。原型固定前結；要看後結請把模擬列的開關打開（SHOW_POSTPAY_SIM）。
+let POSTPAY_DINEIN = false;
 function setPostpay(v) {
   POSTPAY_DINEIN = !!v;
   state.menuOpen = null;
@@ -1092,7 +1119,7 @@ function closeOrder(orderId) {
 
 /* ── 出餐（PRD §3.1 / §3.2）────────────────────────────────
    永遠可按，不因品項狀態 disable，也不改變品項標記。
-   有 CDS：製作中 →〔出餐＋自動叫號〕→ 待取餐
+   有 CDS：製作中 →〔出餐＋自動叫號〕→ 待取餐 →〔已取餐〕→ 消單
    無 CDS：製作中 →〔出餐〕→ 直接消單                            */
 function handleServe(orderId) {
   const order = findOrder(orderId);
@@ -1197,7 +1224,7 @@ function matchOrder(o, q) {
   const qn = norm(q);
   if (!qn) return true;
   return norm(o.orderNumber) === qn
-      // 數字盤打不出平台單號的英文（例：#0984-jxkr），故也比對純數字部分
+      // 只記得單號數字部分時也能找到（例：輸入 0984 找到 #0984-jxkr）
       || (/^\d+$/.test(qn) && digits(o.orderNumber) === qn)
       || digits(o.customer && o.customer.phone) === digits(q);
 }
@@ -1315,7 +1342,7 @@ function renderBattery() {
 function renderSideRail() {
   const unread = unreadCount();
   const bell = iconButton('bell', t(state.lang, 'notifyTitle'), openNotify);
-  if (unread) append(bell, h('span', { class:'rail-badge', text: unread > 99 ? '99+' : String(unread) }));
+  if (unread) append(bell, h('span', { class:'rail-badge', text: unread > 9 ? '9+' : String(unread) }));
 
   return h('div', { class:'siderail' },
     h('div', { class:'toolbar' },
@@ -1351,6 +1378,8 @@ function renderChannelTabs() {
    有/無 CDS      → PRD §3.1 狀態序列、§3.2 叫號、§3.4 選單「叫號」
    前結／後結內用   → PRD §2.2 座位紅字、§3.4 選單「退單」
    正式版這兩者由系統／店家設定判定，不會有這組開關。              */
+// 目前先專注看有無 CDS，前結／後結開關暫時隱藏（改回 true 即可再顯示）。
+const SHOW_POSTPAY_SIM = false;
 function renderSimBar() {
   const lang = state.lang;
   return h('div', { class:'simbar' },
@@ -1361,12 +1390,12 @@ function renderSimBar() {
         [{ value:true,  label:t(lang, 'simOn') },
          { value:false, label:t(lang, 'simOff') }],
         HAS_CDS, setCds)),
-    h('div', { class:'sim-group' },
+    SHOW_POSTPAY_SIM ? h('div', { class:'sim-group' },
       h('span', { class:'sim-label', text:t(lang, 'simCheckout') }),
       segControl(
         [{ value:false, label:t(lang, 'simPrepay') },
          { value:true,  label:t(lang, 'simPostpay') }],
-        POSTPAY_DINEIN, setPostpay)));
+        POSTPAY_DINEIN, setPostpay)) : null);
 }
 
 /* ── TopBar ── */
@@ -1422,7 +1451,6 @@ function renderCustomerNote(order) {
   const visible = collapsible && !open ? lines.slice(0, 2) : lines;
 
   return h('div', { class:'note' },
-    h('span', { class:'n-icon' }, icon('squareMenu', 24)),
     h('div', { class:'note-body' },
       visible.map((line, i) => {
         const truncated = collapsible && !open && i === visible.length - 1;
@@ -1532,9 +1560,6 @@ function renderOrderCard(order, opts) {
   const paid = order.paid !== false && !(POSTPAY_DINEIN && order.type === 'dine-in');
   const closed = !!order.completedAt;          // 已消單
   const ready = !!order.called && !closed;     // 待取餐（已消單就不再套用待取餐配色）
-  // 後結模式下已叫號的訂單，卡片不整張轉藍 ——
-  // 底部藍色「已取餐」CTA 已足以辨識，整張高亮是多餘的視覺噪音。
-  const readyFrame = ready && !POSTPAY_DINEIN;
   const inSearch = !!opts.search;
   const itemOpts = {
     hideCompletedItems: inSearch ? false : s.hideCompletedItems,
@@ -1544,7 +1569,8 @@ function renderOrderCard(order, opts) {
   const groups = buildGroups(order, s.mergeItems);
 
   const card = h('div', {
-      class:'card' + (readyFrame ? ' ready' : '') + (seenCardIds.has(order.id) ? '' : ' v2-slide-in'),
+      // 待取餐的卡片不加藍色外框 —— 底部藍色「已取餐」CTA 已足以辨識
+      class:'card' + (seenCardIds.has(order.id) ? '' : ' v2-slide-in'),
       'data-oid':order.id,
     },
     /* Header */
@@ -1827,30 +1853,27 @@ function renderSearchDialog() {
   if (!sc.open) return null;
   return h('div', { class:'modal-overlay' },          // 無 onclick → 點遮罩不關閉
     h('div', { class:'modal search-dialog' },
-      dialogHead(t(state.lang, 'searchTitle'), () => { closeSearch(); render(); },
-        (sc.selected && sc.results && sc.results.length > 1)
-          ? h('button', { class:'btn gray', style:'padding:12px 20px;font-size:20px',
-              onclick:() => { sc.selected = null; bumpSearchIdle(); render(); } },
-              icon('chevronLeft', 20), t(state.lang, 'backToList'))
-          : null),
+      dialogHead(t(state.lang, 'searchTitle'), () => { closeSearch(); render(); }),
       h('div', { class:'dlg-cols' },
         h('div', { class:'dlg-left' }, renderSearchInput()),
         h('div', { class:'dlg-right' }, renderSearchResult()))));
 }
 
-/* 左欄：大按鍵數字盤 —— 常駐，重新搜尋不必先返回 */
+/* 左欄：大按鍵英數鍵盤 —— 常駐，重新搜尋不必先返回 */
 function renderSearchInput() {
   const sc = state.search;
   return [
     h('div', { class:'dlg-display' + (sc.query ? '' : ' is-empty'),
       text: sc.query || t(state.lang, 'searchHint') }),
     h('div', { class:'keypad' },
-      ['1','2','3','4','5','6','7','8','9'].map(k =>
+      // 平台單號含英文與「-」（例：#0984-JXKR），故用英數鍵盤；字母一律大寫顯示
+      '1234567890QWERTYUIOPASDFGHJKL-'.split('').map(k =>
         h('button', { class:'key', text:k, onclick:() => keyPress(k) })),
-      h('button', { class:'key label', text:t(state.lang, 'keyClear'), onclick:() => keyPress('clear') }),
-      h('button', { class:'key', text:'0', onclick:() => keyPress('0') }),
+      h('button', { class:'key label wide', text:t(state.lang, 'keyClear'), onclick:() => keyPress('clear') }),
+      'ZXCVBNM'.split('').map(k =>
+        h('button', { class:'key', text:k, onclick:() => keyPress(k) })),
       h('button', { class:'key', 'aria-label':'backspace', onclick:() => keyPress('back') },
-        icon('backspace', 32))),
+        icon('backspace', 28))),
     // 離開類按鈕一律在左下角，主要動作在右下角（同設定／補印／通知 Dialog）
     h('div', { class:'dlg-actions' },
       h('button', { class:'btn gray', style:'flex:1', text:t(state.lang, 'close'),
@@ -1870,7 +1893,17 @@ function renderSearchResult() {
     return h('div', { class:'dlg-hint', text:t(state.lang, 'noResult') });
   }
   const selected = sc.selected && sc.results.find(o => o.id === sc.selected);
-  if (selected) return renderOrderCard(selected, { search:true });
+  if (selected) {
+    // 多筆結果點進單筆時，「返回清單」放在卡片左上方、與卡片左緣對齊
+    return [
+      sc.results.length > 1
+        ? h('button', { class:'btn gray dlg-back',
+            onclick:() => { sc.selected = null; bumpSearchIdle(); render(); } },
+            icon('chevronLeft', 20), t(state.lang, 'backToList'))
+        : null,
+      renderOrderCard(selected, { search:true }),
+    ];
+  }
   return [
     h('div', { class:'dlg-found', text:t(state.lang, 'foundN').replace('{n}', sc.results.length) }),
     sc.results.map(o => h('button', { class:'result-row',
@@ -1944,20 +1977,6 @@ function render() {
     el.style.setProperty('--mq-shift', (-over - 2) + 'px');
     el.style.setProperty('--mq-dur', Math.max(1.2, over / MQ_SPEED).toFixed(1) + 's');
   });
-
-  // Dialog 高度固定：不因搜尋前／後或結果筆數而變。
-  // 取主畫面訂單卡片的高度（PRD §2.3.1 — 結果卡片版面與主畫面完全相同），
-  // 但不超過 .modal 的 90vh 上限。
-  const dlg = appRoot.querySelector('.search-dialog');
-  if (dlg) {
-    const boardCard = appRoot.querySelector('.grid .card');
-    const head = dlg.querySelector('.dlg-head');
-    // Dialog 外框：上下 padding 48 ＋ 標題列 ＋ 標題與內容間距 16
-    const chrome = 48 + head.getBoundingClientRect().height + 16;
-    const maxH = window.innerHeight * 0.9 - chrome;
-    const boardH = boardCard ? boardCard.getBoundingClientRect().height : 560;
-    dlg.style.setProperty('--dlg-h', Math.round(Math.min(boardH, maxH)) + 'px');
-  }
 
   // Drop slide-in memory for cards that left the list
   const live = new Set(state.orders.concat(state.history).map(o => o.id));
