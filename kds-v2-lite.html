@@ -203,8 +203,12 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 /* .modal 的 width 在後面定義，故提高一級選擇器權重 */
 .modal.search-dialog{width:80vw;height:calc(100vh - 48px);max-width:none;max-height:none;overflow:hidden;}
 /* 寬佔畫面 8 成；高度幾乎滿版（上下各留 24px），讓結果卡片露出越多越好 */
-.dlg-cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;
-  flex:1 1 auto;min-height:0;}
+.dlg-cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0;
+  flex:1 1 auto;min-height:0;
+  /* 左右欄中間的分隔線要接上 header 分隔線、延伸到 Dialog 底緣 */
+  margin:-16px 0 -20px;}
+.dlg-cols > .dlg-left{padding:16px 20px 20px 0;border-right:2px solid var(--border);}
+.dlg-cols > .dlg-right{padding:16px 0 20px 20px;}
 .dlg-left{display:flex;flex-direction:column;gap:12px;}
 .dlg-actions{margin-top:auto;display:flex;gap:12px;}
 .dlg-right{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0;overflow-y:auto;}
@@ -369,9 +373,13 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 
 /* ═══ SettingsModal ═══ */
 .modal-overlay{position:fixed;inset:0;background:var(--overlay);z-index:80;display:flex;align-items:center;justify-content:center;}
-.modal{background:var(--surface);border-radius:var(--r-xl);padding:24px;box-shadow:var(--shadow4);width:460px;
+.modal{background:var(--surface);border-radius:var(--r-xl);padding:20px;box-shadow:var(--shadow4);width:460px;
   max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
 .modal-title{font-size:24px;font-weight:700;color:var(--text);}
+/* Dialog header／footer 分隔線：以負 margin 撐到 Dialog 左右邊緣，線條滿版 */
+.modal > .dlg-head,
+.modal > .modal-title{flex-shrink:0;margin:0 -20px;padding:0 20px 20px;border-bottom:2px solid var(--border);}
+.modal > .modal-actions{flex-shrink:0;margin:0 -20px;padding:20px 20px 0;border-top:2px solid var(--border);}
 .field{display:flex;flex-direction:column;gap:8px;font-size:20px;color:var(--text);}
 .field > .f-label{font-weight:700;}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:20px;color:var(--text);}
