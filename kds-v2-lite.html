@@ -317,6 +317,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .note{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
   display:flex;gap:8px;align-items:flex-start;width:100%;}
 .note-body{flex:1 0 0;min-width:0;color:var(--text);font-size:20px;font-weight:400;line-height:1.3;}
+.note-body .note-line-memo{font-weight:700;}   /* 備註會改變出餐內容，粗體與客人資料區隔 */
 .note-toggle{background:transparent;border:none;padding:0;cursor:pointer;color:var(--text);display:inline-flex;flex-shrink:0;}
 
 /* ═══ OrderItem (Figma 31:141) ═══ */
@@ -1470,7 +1471,8 @@ function renderCustomerNote(order) {
     h('div', { class:'note-body' },
       visible.map((line, i) => {
         const truncated = collapsible && !open && i === visible.length - 1;
-        return h('div', { text: line.label + '：' + line.value + (truncated ? '...' : '') });
+        return h('div', { class: line.key === 'note' ? 'note-line-memo' : null,
+          text: line.label + '：' + line.value + (truncated ? '...' : '') });
       })),
     collapsible ? h('button', {
       class:'note-toggle', 'aria-label':'toggle', 'aria-expanded':String(open),
