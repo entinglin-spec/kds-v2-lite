@@ -1441,18 +1441,24 @@ function renderCustomerNote(order) {
   if (!state.settings.showOrderInfo) return null;
   const c = order.customer;
   const lines = [];
+  // 顯示優先序（對廚房的影響由高到低）：備註 → 姓名 → 電話 → 地址
+  //   備註：直接影響出餐內容（不需餐具、過敏、分裝），收合時也必須看得到
+  //   姓名：包裝貼單、取餐叫號用
+  //   電話：客人到店或外送員報末碼時核對用
+  //   地址：外送由平台／外送員處理，廚房幾乎用不到，放最後
+  // 收合時只露前 2 列，所以這個順序就是「收合後還看得到什麼」
+  // 客人備註與訂單備註對廚房是同一件事（客人交代的話），合併為單一「備註」列
+  const notes = [c && c.note, order.orderNotes].filter(Boolean);
+  if (notes.length) {
+    lines.push({ key:'note', label:t(state.lang, 'note'),
+      value: notes.join(state.lang === 'zh' ? '；' : '; ') });
+  }
   if (c) {
     lines.push({ key:'customer', label:t(state.lang, 'customer'), value:c.name });
     if (c.phone) lines.push({ key:'phone', label:t(state.lang, 'phone'), value:c.phone });
     if ((order.type === 'ubereats' || order.type === 'foodpanda' || order.type === 'delivery') && c.address) {
       lines.push({ key:'address', label:t(state.lang, 'address'), value:c.address });
     }
-  }
-  // 客人備註與訂單備註對廚房是同一件事（客人交代的話），合併為單一「備註」列
-  const notes = [c && c.note, order.orderNotes].filter(Boolean);
-  if (notes.length) {
-    lines.push({ key:'note', label:t(state.lang, 'note'),
-      value: notes.join(state.lang === 'zh' ? '；' : '; ') });
   }
   if (!lines.length) return null;
 
