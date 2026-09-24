@@ -164,7 +164,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   border:none;background:transparent;font-family:inherit;cursor:pointer;}
 .battery:hover{outline:1px dashed var(--g4);outline-offset:-1px;}   /* 虛線＝模擬功能，與右上角開關同語彙 */
 .battery:active{opacity:.6;}
-.battery .bat-pct{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;}
+.battery .bat-pct{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;}
 /* 20% 與 10% 同樣用紅色警示（只換 icon 與文字色，不加底色）；
    兩段仍分開掛 class，因為通知文案不同（低於 20% / 低於 10%）*/
 .battery.low,
@@ -742,29 +742,21 @@ function icon(name, size) {
   return span;
 }
 
-/* 電量 icon —— 內部填充長度隨電量變動，故不走 ICONS（純 stroke）的路徑 */
+/* 電量 icon —— Figma KDS 2.0 node 201:1190（Battery）。
+   5 種狀態：充電中／滿（3 格）／中（2 格）／低（1 格）／空（0 格，紅字由 .battery.low/.crit 帶）。
+   格數分段依 Figma 範例值：100% 滿、74% 中、49% 低、20% 空 → >74 / >49 / >20 / 其餘。 */
+const BATTERY_FRAME = 'M33 16.5V19.5M6 10.5H24C25.6569 10.5 27 11.8431 27 13.5V22.5C27 24.1569 25.6569 25.5 24 25.5H6C4.34315 25.5 3 24.1569 3 22.5V13.5C3 11.8431 4.34315 10.5 6 10.5Z';
+const BATTERY_BARS  = ['M9 16.5V19.5', 'M15 16.5V19.5', 'M21 16.5V19.5'];
+const BATTERY_CHARGING = 'M22.5 10.5H24C24.7956 10.5 25.5587 10.8161 26.1213 11.3787C26.6839 11.9413 27 12.7044 27 13.5V22.5C27 23.2956 26.6839 24.0587 26.1213 24.6213C25.5587 25.1839 24.7956 25.5 24 25.5H21M9 10.5H6C5.20435 10.5 4.44129 10.8161 3.87868 11.3787C3.31607 11.9413 3 12.7044 3 13.5V22.5C3 23.2956 3.31607 24.0587 3.87868 24.6213C4.44129 25.1839 5.20435 25.5 6 25.5H7.5M16.5 10.5L12 18H18L13.5 25.5M33 16.5V19.5';
 function batteryIcon(level, charging, size) {
-  const pct = Math.max(0, Math.min(1, level));
-  // 內部可用寬度 x 4.5 → 16.5（12）。電量>0 時保留最小可見寬度，免得剩幾 % 就整條不見。
-  const w = pct > 0 ? Math.max(1.5, Math.round(12 * pct * 100) / 100) : 0;
+  const pct = Math.round(Math.max(0, Math.min(1, level)) * 100);
+  const bars = pct > 74 ? 3 : pct > 49 ? 2 : pct > 20 ? 1 : 0;
+  const d = charging ? BATTERY_CHARGING : BATTERY_BARS.slice(0, bars).join('') + BATTERY_FRAME;
   const span = document.createElement('span');
   span.className = 'icon';
-  span.innerHTML = '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" ' +
-    'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-    // 外框：圓角收到 2.5，維持「圓角矩形」而不是膠囊（rx 3.5 會太圓）
-    '<rect x="2" y="7" width="17" height="10" rx="2.5"/>' +
-    // 右側電極：實心水滴狀凸起（參考圖是實心的，不是一條線）
-    '<path d="M19.6 10.1c1.6.4 2.6 1 2.6 1.9s-1 1.5-2.6 1.9z" fill="currentColor" stroke="none"/>' +
-    // 電量條：實心圓角方塊，靠左，與外框留間距
-    (w ? '<rect x="4.5" y="9.5" width="' + w + '" height="5" rx="1.2" fill="currentColor" stroke="none"/>' : '') +
-    // 充電閃電：只在充電中顯示。
-    // 填底色＋描前景色 —— 疊在電量條上時靠底色挖空、落在空白區時靠外框成形，
-    // 半滿時跨在交界上也還讀得出來（單一顏色會在其中一種情況消失）。
-    (charging
-      ? '<path d="M11.6 8.8 8.4 12.7h2l-.8 2.7 3.4-4.3h-2.1z" fill="var(--surface)" ' +
-        'stroke="currentColor" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>'
-      : '') +
-    '</svg>';
+  span.innerHTML = '<svg width="' + size + '" height="' + size + '" viewBox="0 0 36 36" fill="none" ' +
+    'stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="' + d + '"/></svg>';
   return span;
 }
 
@@ -907,9 +899,9 @@ const BATTERY_LOW = 20, BATTERY_CRIT = 10;
 // 原型模擬：點電量塊依序切換，5 段電量 × 未插電／充電中 ＝ 10 種。
 // 先走完一輪未插電（放電），再走一輪充電中。20 ＝ 琥珀、10 ＝ 紅燈。
 const BATTERY_STEPS = [
-  { pct:100, charging:false }, { pct:75, charging:false }, { pct:50, charging:false },
+  { pct:100, charging:false }, { pct:74, charging:false }, { pct:49, charging:false },
   { pct:20,  charging:false }, { pct:10, charging:false },
-  { pct:100, charging:true  }, { pct:75, charging:true  }, { pct:50, charging:true  },
+  { pct:100, charging:true  }, { pct:74, charging:true  }, { pct:49, charging:true  },
   { pct:20,  charging:true  }, { pct:10, charging:true  },
 ];
 let BATTERY_MANUAL = false;   // 手動切過之後就不讓系統電量蓋回去
@@ -1351,7 +1343,7 @@ function renderBattery() {
         + '　/　' + t(state.lang, 'batteryCycle'),
       onclick: cycleBattery,
     },
-    batteryIcon(BATTERY.level, BATTERY.charging, 32),
+    batteryIcon(BATTERY.level, BATTERY.charging, 36),
     h('span', { class:'bat-pct', text:pct + '%' }));
 }
 
