@@ -208,7 +208,8 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   /* 左右欄中間的分隔線要接上 header 分隔線、延伸到 Dialog 底緣 */
   margin:-16px 0 -20px;}
 .dlg-cols > .dlg-left{padding:16px 20px 20px 0;border-right:2px solid var(--border);}
-.dlg-cols > .dlg-right{padding:16px 0 20px 20px;}
+.dlg-cols > .dlg-right{padding:16px 20px 20px;margin-right:-20px;
+  background:var(--page);}   /* #F5F8F9，撐到 Dialog 右緣與底緣（圓角由 Dialog overflow 裁切）*/
 .dlg-left{display:flex;flex-direction:column;gap:12px;}
 .dlg-actions{margin-top:auto;display:flex;gap:12px;}
 .dlg-right{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0;overflow-y:auto;}
@@ -234,7 +235,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .btn.dlg-back{align-self:flex-start;flex-shrink:0;height:48px;padding:0 16px;font-size:20px;}
 .dlg-found{color:var(--text-sub);font-size:20px;}
 .dlg-empty{color:var(--text-sub);font-size:24px;text-align:center;padding:40px 0;}
-.result-row{background:var(--page);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
+.result-row{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
   display:flex;align-items:center;gap:12px;cursor:pointer;width:100%;text-align:left;font-family:inherit;}
 .result-row:active{background:var(--surface-alt);}
 .result-num{font-size:24px;font-weight:700;color:var(--text);flex:1 0 0;min-width:0;
