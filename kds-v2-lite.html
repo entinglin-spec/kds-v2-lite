@@ -1354,16 +1354,11 @@ function renderBattery() {
     h('span', { class:'bat-pct', text:pct + '%' }));
 }
 
-/* Toolbar 由上而下：通知 → 搜尋 → 回上一步 → 重新整理 → 設定。
+/* Toolbar 由上而下：搜尋 → 回上一步 → 重新整理 → 設定。
    電量為狀態顯示（非按鈕），固定在側欄最下方。                      */
 function renderSideRail() {
-  const unread = unreadCount();
-  const bell = iconButton('bell', t(state.lang, 'notifyTitle'), openNotify);
-  if (unread) append(bell, h('span', { class:'rail-badge', text: unread > 9 ? '9+' : String(unread) }));
-
   return h('div', { class:'siderail' },
     h('div', { class:'toolbar' },
-      bell,
       iconButton('search', t(state.lang, 'searchTitle'), openSearch),
       iconButton('cornerUpLeft', t(state.lang, 'undoTitle'), handleUndo),
       iconButton('refresh', t(state.lang, 'refreshTitle'), handleRefresh),
