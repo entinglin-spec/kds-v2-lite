@@ -60,7 +60,7 @@ html[data-theme="light"]{
   --state-ready:#5292D9;
   --notif-unread-bg:#E1F2F0;   /* 設計稿：通知未讀卡片底色（外框與圓點用 brand-primary #58B6A8）*/
   --seat:#D0342C;            /* 保留：PRD §2.2 的後結座位紅字。目前不顯示（已由加點標籤取代） */
-  --toast-bg:#272A3A;
+  --toast-bg:#3F3F46;
   --toast-fg:#FFFFFF;
   --cta-brand-bg:#58B6A8;
   --cta-brand-pressed:#279684;
@@ -89,7 +89,7 @@ html[data-theme="dark"]{
   --state-ready:#5292D9;
   --notif-unread-bg:#16332F;   /* 深色模式對應色，維持與淺色相同的「淡品牌綠」語意 */
   --seat:#FF8A80;            /* 深色模式改用亮紅，對 surface ≈ 7:1 */
-  --toast-bg:#404656;
+  --toast-bg:#3F3F46;
   --toast-fg:#FFFFFF;
   --cta-brand-bg:#279684;
   --cta-brand-pressed:#155F53;
@@ -374,9 +374,9 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .menu .btn{width:100%;}
 
 /* ═══ Toast ═══ */
-.toast-layer{position:fixed;right:24px;bottom:24px;display:flex;flex-direction:column;gap:12px;z-index:100;}
+.toast-layer{position:fixed;right:24px;bottom:24px;display:flex;flex-direction:column;align-items:flex-end;gap:12px;z-index:100;}
 .toast{background:var(--toast-bg);color:var(--toast-fg);padding:14px 20px;border-radius:var(--r-md);
-  box-shadow:var(--shadow4);font-size:20px;font-weight:700;min-width:200px;}
+  box-shadow:var(--shadow4);font-size:20px;font-weight:700;text-align:center;width:fit-content;max-width:calc(100vw - 48px);}
 
 /* ═══ SettingsModal ═══ */
 .modal-overlay{position:fixed;inset:0;background:var(--overlay);z-index:80;display:flex;align-items:center;justify-content:center;}
@@ -1144,10 +1144,10 @@ function handleServe(orderId) {
   pushUndo();
   if (HAS_CDS) {
     order.called = true;
-    pushToast(`${t(state.lang, 'toastServedCalled')} ${order.orderNumber}`);
+    pushToast(`${order.orderNumber} ${t(state.lang, 'toastServedCalled')}`);
     render();
   } else {
-    pushToast(`${t(state.lang, 'toastServed')} ${order.orderNumber}`);
+    pushToast(`${order.orderNumber} ${t(state.lang, 'toastServed')}`);
     closeOrder(orderId);
   }
 }
@@ -1157,7 +1157,7 @@ function handlePickup(orderId) {
   const order = findOrder(orderId);
   if (!order) return;
   pushUndo();
-  pushToast(`${t(state.lang, 'toastPickedUp')} ${order.orderNumber}`);
+  pushToast(`${order.orderNumber} ${t(state.lang, 'toastPickedUp')}`);
   closeOrder(orderId);
 }
 
@@ -1176,7 +1176,7 @@ function handleAction(action, order) {
     render();
     return;
   }
-  pushToast(`${t(state.lang, 'toastCalled')} ${order.orderNumber}`);
+  pushToast(`${order.orderNumber} ${t(state.lang, 'toastCalled')}`);
   render();
 }
 
@@ -1191,7 +1191,7 @@ function doReprint() {
   state.reprint = { open:false, orderId:null, kitchen:false, sticker:false };
   if (order) {
     const sep = state.lang === 'zh' ? '、' : ' + ';
-    pushToast(`${t(state.lang, 'toastReprinted')}${kinds.join(sep)} ${order.orderNumber}`);
+    pushToast(`${order.orderNumber} ${t(state.lang, 'toastReprinted')}${kinds.join(sep)}`);
   }
   render();
 }
@@ -1204,7 +1204,7 @@ function doRefund() {
   if (!order) { render(); return; }
   order.refunded = true;   // 併入 history 的副本會帶著這個旗標，搜尋時顯示「已退單」
   dropFromUndo(id);        // 不記錄復原點，且既有復原點不得救回這筆訂單
-  pushToast(`${t(state.lang, 'toastRefunded')} ${order.orderNumber}`);
+  pushToast(`${order.orderNumber} ${t(state.lang, 'toastRefunded')}`);
   render();          // 先收掉確認框
   closeOrder(id);    // 再播卡片淡出
 }
@@ -1564,7 +1564,7 @@ function placeItemMenu(menu, anchor) {
 // 補印單一品項的標籤貼紙（需出單機）
 function reprintItemLabel(order, item) {
   state.itemMenu = null;
-  pushToast(`${t(state.lang, 'toastReprinted')}${t(state.lang, 'reprintSticker')} ${item.name}`);
+  pushToast(`${item.name} ${t(state.lang, 'toastReprinted')}${t(state.lang, 'reprintSticker')}`);
   render();
 }
 
@@ -1809,7 +1809,7 @@ function renderReprintDialog() {
   };
   return h('div', { class:'modal-overlay', onclick: close },
     h('div', { class:'modal reprint-dialog', onclick:(e) => e.stopPropagation() },
-      h('div', { class:'modal-title', text:t(state.lang, 'reprintTitle') }),
+      dialogHead(t(state.lang, 'reprintTitle'), close),
       opt('kitchen', 'reprintKitchen'),
       opt('sticker', 'reprintSticker'),
       h('div', { class:'modal-actions' },
