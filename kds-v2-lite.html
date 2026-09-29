@@ -38,7 +38,7 @@
   --shadow4:0px 24px 40px rgba(24,24,27,0.1), 0px 0px 1px rgba(24,24,27,0.1);
   /* 設計稿 Font Size token：品項字體大小 S / M / L（由設定寫入，預設 M）
      Item-Text      24 / 32 / 36
-     Attribute-Text 20 / 24 / 28 */
+     Attribute-Text 20 / 24 / 28（屬性、數量、品項備註共用） */
   --item-fs:32px; --attr-fs:24px;
 }
 
@@ -339,10 +339,10 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   font-size:16px;font-weight:700;padding:0 6px;border-radius:var(--r-xs);
   white-space:nowrap;flex-shrink:0;line-height:1.5;}
 .item.is-done .item-addon{color:var(--text-disable);border-color:var(--text-disable);}
-.item-qty{color:var(--text);font-size:24px;font-weight:700;white-space:nowrap;flex-shrink:0;}
+.item-qty{color:var(--text);font-size:var(--attr-fs,24px);font-weight:700;white-space:nowrap;flex-shrink:0;}
 .item.is-done .item-name,.item.is-done .item-qty{color:var(--text-disable);}
 .item-notes{color:var(--text-sub);font-size:20px;font-weight:400;width:100%;line-height:1.3;}
-/* PRD：「品項字體大小」只影響品項名稱與屬性名稱，備註與其他資訊維持固定字級 */
+/* PRD：「品項文字大小」影響品項名稱、屬性、數量與品項備註，備註與其他資訊維持固定字級 */
 .item-notes.item-attr{font-size:var(--attr-fs,24px);}
 .item.is-done .item-notes{color:var(--text-disable);}
 
@@ -404,11 +404,16 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .modal-actions{display:flex;gap:12px;}
 .modal-actions .btn{font-size:20px;padding:14px;}
 .modal.reprint-dialog{width:360px;gap:12px;}
-.reprint-opt{background:var(--page);border:2px solid var(--border);border-radius:var(--r-md);padding:16px;
+.reprint-opt{background:none;border:none;border-radius:var(--r-md);padding:12px 4px;
   display:flex;align-items:center;gap:12px;width:100%;cursor:pointer;text-align:left;
-  font-family:inherit;font-size:24px;font-weight:700;color:var(--text);}
-.reprint-opt:active{background:var(--surface-alt);}
-.reprint-opt.on{border-color:var(--brand-primary);}
+  font-family:inherit;font-size:24px;font-weight:400;color:var(--text);}
+
+/* 長按品項 → 浮出「補印標籤」按鈕 */
+.menu.item-menu{position:fixed;z-index:60;}
+/* 箭頭：指向被長按的品項（面板在上方 → 箭頭朝下；放不下改放下方 → 箭頭朝上） */
+.item-menu::after{content:'';position:absolute;left:var(--arrow-x,32px);bottom:-8px;width:14px;height:14px;margin-left:-7px;
+  background:var(--surface);border:1px solid var(--menu-ring);border-top:none;border-left:none;transform:rotate(45deg);}
+.item-menu.below::after{bottom:auto;top:-8px;border:1px solid var(--menu-ring);border-bottom:none;border-right:none;}   /* fixed：避免被卡片的捲動容器裁切；位置由 placeItemMenu 計算 */   /* 樣式沿用 .menu（同訂單下方選單） */
 
 /* ═══ 通知 Dialog（PRD §2.3 — 商店通知）═══ */
 /* 高度與搜尋訂單 Dialog 一致（上下各留 24px），清單填滿中間、超出可捲動 */
@@ -449,12 +454,12 @@ const STR = {
     serve:'出餐', pickedUp:'已取餐', scheduled:'預約', addon:'加點',
     toastPickedUp:'已取餐', actionCall:'叫號', actionReprint:'補印',
     customer:'訂購人', phone:'電話', address:'地址', note:'備註',
-    toastCalled:'已叫號', toastReprinted:'已補印',
-    reprintTitle:'補印', reprintKitchen:'廚房單', reprintSticker:'標籤貼紙',
+    toastCalled:'已叫號', toastReprinted:'已補印', itemReprintLabel:'補印標籤',
+    reprintTitle:'補印', reprintKitchen:'廚房明細', reprintSticker:'標籤貼紙',
     confirm:'確認', cancel:'取消', itemMemo:'備註',
     toastServed:'已出餐', toastServedCalled:'已出餐並叫號',
     toastUndone:'已復原上一步', toastNoUndo:'沒有可復原的動作', toastRefreshed:'已重新整理',
-    settingsTitle:'設定', fontScale:'品項字體大小', close:'關閉',
+    settingsTitle:'設定', fontScale:'品項文字大小', close:'關閉',
     noOrders:'暫無訂單',
     searchTitle:'搜尋訂單', searchHint:'輸入訂單編號或電話號碼',
     searchIdle:'輸入訂單編號或電話號碼後按「搜尋」', backToList:'返回清單',
@@ -488,12 +493,12 @@ const STR = {
     serve:'Serve', pickedUp:'Picked Up', scheduled:'Sched.', addon:'Add-on',
     toastPickedUp:'Picked up', actionCall:'Call', actionReprint:'Reprint',
     customer:'Customer', phone:'Phone', address:'Address', note:'Note',
-    toastCalled:'Called', toastReprinted:'Reprinted',
-    reprintTitle:'Reprint', reprintKitchen:'Kitchen ticket', reprintSticker:'Label sticker',
+    toastCalled:'Called', toastReprinted:'Reprinted', itemReprintLabel:'Reprint label',
+    reprintTitle:'Reprint', reprintKitchen:'Kitchen details', reprintSticker:'Label sticker',
     confirm:'Confirm', cancel:'Cancel', itemMemo:'Note',
     toastServed:'Served', toastServedCalled:'Served & called',
     toastUndone:'Undone', toastNoUndo:'Nothing to undo', toastRefreshed:'Refreshed',
-    settingsTitle:'Settings', fontScale:'Item font size', close:'Close',
+    settingsTitle:'Settings', fontScale:'Item text size', close:'Close',
     noOrders:'No orders',
     searchTitle:'Search Order', searchHint:'Enter order number or phone',
     searchIdle:'Enter a number, then press Search', backToList:'Back to list',
@@ -555,7 +560,7 @@ function mkOrders() {
         { id:'i5', name:'紅燒獅子頭', qty:1, notes:'少油', attachedToPrev:true },
         { id:'i6', name:'老虎蝦', qty:1, notes:'' },
       ]},
-    { id:'ord-003', tableNumber:'#0040', orderNumber:'#00002904', type:'ubereats', source:'ubereats',
+    { id:'ord-003', tableNumber:'#00002904', orderNumber:'#00002904', type:'ubereats', source:'ubereats',
       startTime: now - 7 * MIN, scheduledTime: now + 18 * MIN, paid:true,
       customer:{ name:'陳小明', phone:'0912-345-678', address:'台北市大安區忠孝東路四段100號3樓', note:'不需餐具' },
       orderNotes:'請盡快送到，有小孩等著吃', items:[
@@ -619,7 +624,7 @@ function mkOrders() {
         { id:'r3', name:'滷蛋', qty:4, notes:'' },
       ]},
     // 非當日預約 —— 需一併顯示日期
-    { id:'ord-007', tableNumber:'#0054', orderNumber:'#0054', type:'ubereats', source:'ubereats',
+    { id:'ord-007', tableNumber:'#00003317', orderNumber:'#00003317', type:'ubereats', source:'ubereats',
       startTime: now - 1 * MIN, scheduledTime: nextDayNoon(), paid:true,
       customer:{ name:'黃柏翰', phone:'0922-567-890', address:'台北市中山區南京東路二段88號5樓' },
       orderNotes:'請放門口，不用按門鈴', items:[
@@ -943,6 +948,7 @@ const state = {
   lang: 'zh',
   page: 0,              // 目前頁碼（翻頁瀏覽）
   menuOpen: null,       // orderId with an open kebab menu
+  itemMenu: null,       // 'orderId:itemId' — 長按品項後顯示「補印標籤」的品項
   noteCollapsed: {},    // orderId -> true when the customer note is collapsed
 };
 
@@ -1165,7 +1171,7 @@ function handleAction(action, order) {
     return;
   }
   if (action === 'reprint') {
-    // PRD §3.4 — 補印需先以 Dialog 選擇「廚房單／標籤貼紙」
+    // PRD §3.4 — 補印需先以 Dialog 選擇「廚房明細／標籤貼紙」
     state.reprint = { open:true, orderId:order.id, kitchen:false, sticker:false };
     render();
     return;
@@ -1174,7 +1180,7 @@ function handleAction(action, order) {
   render();
 }
 
-// PRD §3.4 — 補印可同時選廚房單與標籤貼紙（複選）
+// PRD §3.4 — 補印可同時選廚房明細與標籤貼紙（複選）
 function doReprint() {
   const rp = state.reprint;
   const kinds = [];
@@ -1509,6 +1515,59 @@ function attrLines(item) {
   return item.notes ? [item.notes] : [];
 }
 
+const LONG_PRESS_MS = 500;
+// 長按（不移動）達 LONG_PRESS_MS 觸發 onLong；觸發後吃掉緊接著的 click，避免誤勾品項
+function attachLongPress(el, onLong) {
+  let timer = null, sx = 0, sy = 0;
+  const pt = (e) => (e.touches && e.touches[0]) || e;
+  const cancel = () => { clearTimeout(timer); timer = null; };
+  const start = (e) => {
+    const p = pt(e); sx = p.clientX; sy = p.clientY;
+    cancel();
+    timer = setTimeout(() => {
+      timer = null;
+      el._longFired = true;
+      onLong();
+    }, LONG_PRESS_MS);
+  };
+  const move = (e) => {
+    if (!timer) return;
+    const p = pt(e);
+    if (Math.abs(p.clientX - sx) > SCROLL_SLOP || Math.abs(p.clientY - sy) > SCROLL_SLOP) cancel();
+  };
+  el.addEventListener('mousedown', start);
+  el.addEventListener('mousemove', move);
+  el.addEventListener('mouseup', cancel);
+  el.addEventListener('mouseleave', cancel);
+  el.addEventListener('touchstart', start, { passive:true });
+  el.addEventListener('touchmove', move, { passive:true });
+  el.addEventListener('touchend', cancel, { passive:true });
+  el.addEventListener('touchcancel', cancel, { passive:true });
+  el.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+
+// 面板置於品項上方（左緣對齊品項）；上方空間不足時改放下方
+function placeItemMenu(menu, anchor) {
+  const r = anchor.getBoundingClientRect(), m = menu.getBoundingClientRect();
+  const left = Math.max(8, Math.min(r.left, innerWidth - m.width - 8));
+  let top = r.top - m.height - 8;
+  const below = top < 8;
+  if (below) top = r.bottom + 8;
+  menu.classList.toggle('below', below);
+  // 箭頭對準品項的水平位置（限制在面板圓角內）
+  const ax = Math.max(24, Math.min(r.left + 32 - left, m.width - 24));
+  menu.style.setProperty('--arrow-x', ax + 'px');
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
+// 補印單一品項的標籤貼紙（需出單機）
+function reprintItemLabel(order, item) {
+  state.itemMenu = null;
+  pushToast(`${t(state.lang, 'toastReprinted')}${t(state.lang, 'reprintSticker')} ${item.name}`);
+  render();
+}
+
 /* ── OrderItem (Figma 31:141) ── */
 function renderOrderItem(order, item, position, opts) {
   const done = !!item.done;
@@ -1537,11 +1596,35 @@ function renderOrderItem(order, item, position, opts) {
       // PRD §2.2 — 品項名稱 ＋ 屬性 ＋ 數量 ＋ 品項備註；備註恆顯示，不受訂單資訊開關影響
       // 屬性可為單行字串或多行陣列（例：['熟度：全熟', '客製化：不加洋蔥, 小辣']）
       attrLines(item).map(line => h('div', { class:'item-notes item-attr', text:line })),
-      item.memo ? h('div', { class:'item-notes', text:t(state.lang, 'itemMemo') + '：' + item.memo }) : null));
+      item.memo ? h('div', { class:'item-notes item-attr', text:t(state.lang, 'itemMemo') + '：' + item.memo }) : null));
 
-  attachTap(row, mark);
+  attachTap(row, () => {
+    if (row._longFired) { row._longFired = false; return; }
+    mark();
+  });
 
-  return h('div', { class:'item-wrap' }, row);
+  const key = order.id + ':' + item.id;
+  const menuEl = () => h('div', { class:'menu item-menu' },
+    h('button', { class:'btn gray', text:t(state.lang, 'itemReprintLabel'),
+      onclick:(e) => { e.stopPropagation(); reprintItemLabel(order, item); } }));
+  const wrap = h('div', { class:'item-wrap' }, row,
+    (HAS_PRINTER && state.itemMenu === key) ? menuEl() : null);
+  const reopened = wrap.querySelector('.item-menu');
+  if (reopened) requestAnimationFrame(() => placeItemMenu(reopened, row));
+
+  if (HAS_PRINTER) {
+    attachLongPress(row, () => {
+      state.itemMenu = key;
+      state.menuOpen = null;
+      if (!wrap.querySelector('.item-menu')) {
+        const m = menuEl();
+        wrap.appendChild(m);
+        placeItemMenu(m, row);
+      }
+    });
+  }
+
+  return wrap;
 }
 
 /* ── DropdownMenu (Figma 56:2601) ── */
@@ -1884,7 +1967,7 @@ function renderSearchInput() {
     h('div', { class:'dlg-display' + (sc.query ? '' : ' is-empty'),
       text: sc.query || t(state.lang, 'searchHint') }),
     h('div', { class:'keypad' },
-      // 平台單號含英文與「-」（例：#0984-JXKR），故用英數鍵盤；字母一律大寫顯示
+      // 平台單號含英文與「-」（例：#0984-jxkr），故用英數鍵盤；鍵盤字母為大寫，搜尋不分大小寫
       '1234567890QWERTYUIOPASDFGHJKL-'.split('').map(k =>
         h('button', { class:'key', text:k, onclick:() => keyPress(k) })),
       h('button', { class:'key label wide', text:t(state.lang, 'keyClear'), onclick:() => keyPress('clear') }),
@@ -2047,13 +2130,24 @@ keepAwake();
    The open panel is removed directly (no full re-render) so the button that
    was clicked survives to receive its own click — same sequence as React. */
 document.addEventListener('mousedown', (e) => {
+  if (state.itemMenu && !e.target.closest('.item-menu')) {
+    document.querySelectorAll('.item-menu').forEach(m => m.remove());
+    state.itemMenu = null;
+  }
   if (state.menuOpen) {
     const menu = appRoot.querySelector('.card-foot .menu');
     if (menu && !menu.contains(e.target)) { menu.remove(); state.menuOpen = null; }
   }
 }, true);
+document.addEventListener('scroll', () => {
+  if (state.itemMenu) {
+    document.querySelectorAll('.item-menu').forEach(m => m.remove());
+    state.itemMenu = null;
+  }
+}, true);
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
+  if (state.itemMenu) { state.itemMenu = null; render(); return; }
   if (state.menuOpen) { state.menuOpen = null; render(); return; }
   if (state.notifOpen) { closeNotify(); }
 });
