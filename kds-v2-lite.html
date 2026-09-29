@@ -62,6 +62,7 @@ html[data-theme="light"]{
   --seat:#D0342C;            /* 保留：PRD §2.2 的後結座位紅字。目前不顯示（已由加點標籤取代） */
   --toast-bg:#3F3F46;
   --toast-fg:#FFFFFF;
+  --net-off-bg:#D0342C;   /* 斷線橫幅：白字對比 ≥ 5:1 */
   --cta-brand-bg:#58B6A8;
   --cta-brand-pressed:#279684;
   --dropdown-item-bg:#E4E4E7;
@@ -373,6 +374,13 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .menu.down{top:calc(100% + 8px);left:0;}
 .menu .btn{width:100%;}
 
+/* ═══ 斷線橫幅（位於分頁列下方、訂單區上方，佔版面高度）═══ */
+.net-banner{flex-shrink:0;height:56px;display:flex;align-items:center;justify-content:center;gap:12px;
+  background:var(--net-off-bg);color:#fff;font-size:24px;font-weight:700;animation:v2SlideIn .2s ease-out;}
+.net-spin.lottie{border:none;animation:none;border-radius:0;width:36px;height:36px;}
+.net-spin{width:22px;height:22px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;animation:netSpin .9s linear infinite;flex-shrink:0;}
+@keyframes netSpin{to{transform:rotate(360deg)}}
+
 /* ═══ Toast ═══ */
 .toast-layer{position:fixed;right:24px;bottom:24px;display:flex;flex-direction:column;align-items:flex-end;gap:12px;z-index:100;}
 .toast{background:var(--toast-bg);color:var(--toast-fg);padding:14px 20px;border-radius:var(--r-md);
@@ -439,6 +447,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 <div id="app"></div>
 <div class="toast-layer" id="toastLayer"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════
    KDS 2.0 Lite — single-file, no-build port of the React v2 app.
@@ -477,6 +486,8 @@ const STR = {
     undoTitle:'回上一步', refreshTitle:'重新整理',
     // 原型模擬開關
     simTag:'模擬', simCds:'CDS', simOn:'有', simOff:'無',
+    simNet:'網路', simNetOn:'正常', simNetOff:'斷線',
+    netLost:'等待網路連接...',
     simCheckout:'結帳', simPrepay:'前結', simPostpay:'後結',
     // 退單（PRD §3.4 — 後結限定、需二次確認）
     actionRefund:'退單', refundTitle:'確認退單？',
@@ -516,6 +527,8 @@ const STR = {
     undoTitle:'Undo', refreshTitle:'Refresh',
     // 原型模擬開關
     simTag:'DEMO', simCds:'CDS', simOn:'Yes', simOff:'No',
+    simNet:'Network', simNetOn:'OK', simNetOff:'Offline',
+    netLost:'Waiting for network...',
     simCheckout:'Checkout', simPrepay:'Pre-pay', simPostpay:'Post-pay',
     // 退單（PRD §3.4 — 後結限定、需二次確認）
     actionRefund:'Refund', refundTitle:'Refund this order?',
@@ -970,6 +983,44 @@ function pushToast(message) {
   setTimeout(() => el.remove(), 2800);
 }
 
+/* ───────────────────────── 斷線橫幅 ─────────────────────────
+   斷線超過 NET_LOST_DELAY 才顯示（避免短暫抖動一直閃）；恢復連線後橫幅直接消失。
+   demo：頂部「網路」開關，或 console 執行 kdsSetNet(false / true)；也接瀏覽器 online/offline 事件。 */
+const NET_LOST_DELAY = 2500;
+let NET_ONLINE = true, netLostTimer = null;
+let netBanner = null;   // null | 'lost'
+function setNet(online) {
+  online = !!online;
+  if (online === NET_ONLINE) return;
+  NET_ONLINE = online;
+  clearTimeout(netLostTimer);
+  if (!online) {
+    netLostTimer = setTimeout(() => { netBanner = 'lost'; render(); }, NET_LOST_DELAY);
+  } else {
+    netBanner = null;   // 恢復連線：橫幅直接消失，不另外提示
+  }
+  render();
+}
+// 斷線 loading 動畫（loading.json，8 瓣白色漸隱）；lottie-web 載入失敗時退回 CSS 轉圈
+const NET_LOTTIE = {"v":"5.4.4","fr":30,"ip":0,"op":26,"w":100,"h":100,"nm":"loading","ddd":0,"assets":[],"layers":[{"ddd":0,"ind":1,"ty":4,"nm":"1","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[100],"e":[40]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":3.25,"s":[40],"e":[60]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":19.5,"s":[60],"e":[90]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":22.75,"s":[90],"e":[100]},{"t":26}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[50.001,16.531,0],"ix":2},"a":{"a":0,"k":[9.234,15.609,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,-2.202],[0,0],[-2.201,0],[0,2.2],[0,0],[2.2,0]],"o":[[0,0],[0,2.2],[2.2,0],[0,0],[0,-2.202],[-2.201,0]],"v":[[-3.985,-6.374],[-3.985,6.375],[0,10.359],[3.985,6.375],[3.985,-6.374],[0,-10.359]],"c":true},"ix":2},"nm":"n","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"n","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[9.234,15.609],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"n"}],"nm":"g","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":152,"st":0,"bm":0},{"ddd":0,"ind":2,"ty":4,"nm":"2","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[90],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":3.25,"s":[100],"e":[40]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":6.5,"s":[40],"e":[60]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":22.75,"s":[60],"e":[90]},{"t":26}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[73.665,26.335,0],"ix":2},"a":{"a":0,"k":[13.743,13.743,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0.778,-0.778],[0,0],[-1.556,-1.556],[-1.556,1.556],[-0.001,0],[0,0],[1.556,1.555],[1.02,0]],"o":[[0,0],[-1.557,1.556],[1.555,1.556],[0,0],[0,0],[1.556,-1.556],[-0.778,-0.778],[-1.019,0]],"v":[[1.692,-7.52],[-7.324,1.495],[-7.326,7.13],[-1.691,7.131],[-1.691,7.131],[7.326,-1.886],[7.326,-7.52],[4.509,-8.687]],"c":true},"ix":2},"nm":"n","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"n","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[13.742,13.937],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"n"}],"nm":"g","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":152,"st":0,"bm":0},{"ddd":0,"ind":3,"ty":4,"nm":"3","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[60],"e":[90]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":3.25,"s":[90],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":6.5,"s":[100],"e":[40]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":9.75,"s":[40],"e":[60]},{"t":26}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[83.469,50.001,0],"ix":2},"a":{"a":0,"k":[15.609,9.235,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[0,-2.201],[-2.2,0],[0,0],[0,2.2],[2.201,0]],"o":[[-2.2,0],[0,2.2],[0,0],[2.201,0],[0,-2.201],[0,0]],"v":[[-6.375,-3.985],[-10.359,0],[-6.375,3.985],[6.374,3.985],[10.359,0],[6.374,-3.985]],"c":true},"ix":2},"nm":"n","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"n","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[15.61,9.234],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"n"}],"nm":"g","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":152,"st":0,"bm":0},{"ddd":0,"ind":4,"ty":4,"nm":"4","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[40],"e":[60]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":3.25,"s":[60],"e":[90]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":6.5,"s":[90],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":9.75,"s":[100],"e":[40]},{"t":13}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[73.666,73.666,0],"ix":2},"a":{"a":0,"k":[13.742,13.743,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0.778,-0.778],[-1.556,-1.556],[0,0],[0,0],[-1.555,1.556],[1.556,1.556],[0,0],[1.02,0]],"o":[[-1.555,1.555],[0,0],[0,0],[1.556,1.556],[1.556,-1.555],[0,0],[-0.778,-0.779],[-1.02,0]],"v":[[-7.324,-7.52],[-7.326,-1.886],[-7.326,-1.885],[1.692,7.131],[7.326,7.131],[7.326,1.497],[-1.689,-7.519],[-4.508,-8.687]],"c":true},"ix":2},"nm":"n","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"n","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[13.742,13.937],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"n"}],"nm":"g","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":152,"st":0,"bm":0},{"ddd":0,"ind":5,"ty":4,"nm":"5","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[40],"e":[60]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":6.5,"s":[60],"e":[90]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":9.75,"s":[90],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":13,"s":[100],"e":[40]},{"t":16.25}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[50.001,83.469,0],"ix":2},"a":{"a":0,"k":[9.234,15.61,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,-2.2],[0,0],[-2.201,0],[0,2.2],[0,0],[2.2,0]],"o":[[0,0],[0,2.2],[2.2,0],[0,0],[0,-2.2],[-2.201,0]],"v":[[-3.985,-6.375],[-3.985,6.375],[0,10.359],[3.985,6.375],[3.985,-6.375],[0,-10.359]],"c":true},"ix":2},"nm":"n","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"n","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[9.234,15.61],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"n"}],"nm":"g","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":152,"st":0,"bm":0},{"ddd":0,"ind":6,"ty":4,"nm":"8","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[40],"e":[60]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":9.75,"s":[60],"e":[90]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":13,"s":[90],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":16.25,"s":[100],"e":[40]},{"t":19.5}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[26.334,73.666,0],"ix":2},"a":{"a":0,"k":[13.742,13.742,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0.778,-0.779],[0,0],[-1.556,-1.555],[-1.556,1.556],[0,0],[1.555,1.557],[0,0],[1.019,0]],"o":[[0,0],[-1.556,1.556],[1.555,1.556],[0,0],[1.556,-1.556],[0,0],[-0.778,-0.779],[-1.02,0]],"v":[[1.69,-7.519],[-7.325,1.497],[-7.325,7.131],[-1.691,7.131],[7.325,-1.884],[7.326,-7.519],[7.325,-7.519],[4.508,-8.687]],"c":true},"ix":2},"nm":"n","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"n","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[13.742,13.936],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"n"}],"nm":"g","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":152,"st":0,"bm":0},{"ddd":0,"ind":7,"ty":4,"nm":"6","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[40],"e":[60]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":13,"s":[60],"e":[90]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":16.25,"s":[90],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":19.5,"s":[100],"e":[40]},{"t":22.75}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[16.531,50.001,0],"ix":2},"a":{"a":0,"k":[15.61,9.235,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[0,-2.201],[-2.2,0],[0,0],[0,2.2],[2.201,0]],"o":[[-2.2,0],[0,2.2],[0,0],[2.201,0],[0,-2.201],[0,0]],"v":[[-6.375,-3.985],[-10.359,0],[-6.375,3.985],[6.375,3.985],[10.359,0],[6.375,-3.985]],"c":true},"ix":2},"nm":"n","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"n","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[15.609,9.234],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"n"}],"nm":"g","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":152,"st":0,"bm":0},{"ddd":0,"ind":8,"ty":4,"nm":"7","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[40],"e":[60]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":16.25,"s":[60],"e":[90]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":19.5,"s":[90],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":22.75,"s":[100],"e":[40]},{"t":26}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[26.334,26.335,0],"ix":2},"a":{"a":0,"k":[13.743,13.743,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0.777,-0.778],[-1.556,-1.556],[0,0],[-1.555,1.556],[1.556,1.556],[0,0],[1.019,0]],"o":[[-1.556,1.555],[0,0],[1.556,1.556],[1.556,-1.555],[0,0],[-0.778,-0.778],[-1.02,0]],"v":[[-7.326,-7.52],[-7.326,-1.886],[1.691,7.131],[7.326,7.131],[7.326,1.497],[-1.691,-7.52],[-4.508,-8.687]],"c":true},"ix":2},"nm":"n","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[1,1,1,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"n","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[13.743,13.937],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"n"}],"nm":"g","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":152,"st":0,"bm":0}],"markers":[]};
+function netSpinner() {
+  const el = h('span', { class:'net-spin' });
+  if (window.lottie) {
+    el.classList.add('lottie');
+    window.lottie.loadAnimation({ container:el, renderer:'svg', loop:true, autoplay:true, animationData:NET_LOTTIE });
+  }
+  return el;
+}
+function renderNetBanner() {
+  if (!netBanner) return null;
+  return h('div', { class:'net-banner', role:'status' },
+    h('span', { text:t(state.lang, 'netLost') }),
+    netSpinner());
+}
+window.kdsSetNet = (v) => { setNet(v); return NET_ONLINE; };
+window.addEventListener('offline', () => setNet(false));
+window.addEventListener('online', () => setNet(true));
+
 /* ───────────────────────── Actions ───────────────────────── */
 // PRD §4 —「點確認才儲存」：改動只寫進草稿，主畫面不即時套用
 function setSetting(key, value) {
@@ -1402,6 +1453,12 @@ function renderSimBar() {
         [{ value:true,  label:t(lang, 'simOn') },
          { value:false, label:t(lang, 'simOff') }],
         HAS_CDS, setCds)),
+    h('div', { class:'sim-group' },
+      h('span', { class:'sim-label', text:t(lang, 'simNet') }),
+      segControl(
+        [{ value:true,  label:t(lang, 'simNetOn') },
+         { value:false, label:t(lang, 'simNetOff') }],
+        NET_ONLINE, setNet)),
     SHOW_POSTPAY_SIM ? h('div', { class:'sim-group' },
       h('span', { class:'sim-label', text:t(lang, 'simCheckout') }),
       segControl(
@@ -2013,6 +2070,7 @@ function renderApp() {
     h('div', { class:'body-row' },
       renderSideRail(),
       h('div', { class:'content' },
+        renderNetBanner(),
         renderGrid(),
         renderPager())),
     renderSearchDialog(),
