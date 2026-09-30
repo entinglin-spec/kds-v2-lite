@@ -59,6 +59,7 @@ html[data-theme="light"]{
   --elevated-border:transparent;
   /* 線 */
   --border:var(--gray-3);
+  --divider-raised:var(--gray-3);   /* Dialog 內的分隔線 */
   --item-border:var(--gray-3);
   --menu-ring:transparent;
   /* 控制項 */
@@ -91,7 +92,8 @@ html[data-theme="light"]{
   --header-ue:var(--ue-tint);
   --header-fp:var(--fp-tint);
   /* CTA、其他 */
-  --cta-brand-bg:var(--primary-base);
+  --brand-solid:var(--primary-base);      /* 實心品牌色塊（按鈕、選中分頁／選項、開關、勾選）白字／白 icon 放其上 */
+  --cta-brand-bg:var(--brand-solid);
   --cta-brand-pressed:var(--primary-shade);
   --toast-bg:var(--gray-7);
   --toast-fg:var(--white);
@@ -112,6 +114,7 @@ html[data-theme="dark"]{
   --elevated-border:var(--gray-6);
   /* 線 */
   --border:var(--gray-7);
+  --divider-raised:var(--gray-6);   /* Dialog 內的分隔線：與 Dialog 外框同為 Gray 6，只有一種線色 */
   --item-border:var(--gray-6);
   --menu-ring:var(--gray-6);
   /* 控制項：可按的東西 Gray 6，比底色亮一大階 */
@@ -125,7 +128,7 @@ html[data-theme="dark"]{
   --seg-bg:var(--gray-10);
   --switch-off:var(--gray-5);
   --input-bg:var(--gray-10);
-  --input-border:var(--gray-4);
+  --input-border:var(--gray-6);
   --input-ph:var(--gray-4);
   /* 文字 */
   --text:var(--gray-2);
@@ -144,8 +147,9 @@ html[data-theme="dark"]{
   --header-ue:var(--ue-shade);
   --header-fp:var(--fp-shade);
   /* CTA、其他 */
-  --cta-brand-bg:var(--primary-base);
-  --cta-brand-pressed:var(--primary-shade);
+  --brand-solid:var(--primary-shade);     /* 深色：白字對比 3.9:1（Base 只有 2.4:1） */
+  --cta-brand-bg:var(--brand-solid);
+  --cta-brand-pressed:var(--primary-base);  /* 沒有比 Shade 更深的品牌階，按下改為提亮一階 */
   --toast-bg:var(--gray-7);
   --toast-fg:var(--white);
   --overlay:rgba(9,9,11,0.72);     /* Gray 10 × 72% */
@@ -220,7 +224,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   height:60px;padding:12px 20px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;
   user-select:none;transition:background .08s linear;flex-shrink:0;white-space:nowrap;}
 .tab:active{background:var(--gray-2);}
-.tab.active{background:var(--primary-base);color:var(--white);border-color:transparent;font-weight:700;}
+.tab.active{background:var(--brand-solid);color:var(--white);border-color:transparent;font-weight:700;}
 .tab .t-label{font-size:24px;font-weight:inherit;}
 .tab .t-count{font-size:20px;font-weight:inherit;}
 
@@ -252,7 +256,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   flex:1 1 auto;min-height:0;
   /* 左右欄中間的分隔線要接上 header 分隔線、延伸到 Dialog 底緣 */
   margin:-16px 0 -20px;}
-.dlg-cols > .dlg-left{padding:16px 20px 20px 0;border-right:2px solid var(--border);}
+.dlg-cols > .dlg-left{padding:16px 20px 20px 0;border-right:2px solid var(--divider-raised);}
 .dlg-cols > .dlg-right{padding:16px 20px 20px;margin-right:-20px;
   background:var(--page);}   /* #F5F8F9，撐到 Dialog 右緣與底緣（圓角由 Dialog overflow 裁切）*/
 .dlg-left{display:flex;flex-direction:column;gap:12px;}
@@ -278,14 +282,14 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .key:active{background:var(--dropdown-item-pressed);}
 .key.label{font-size:20px;}
 .btn.dlg-back{align-self:flex-start;flex-shrink:0;height:48px;padding:0 16px;font-size:20px;}
-.dlg-found{color:var(--text-sub);font-size:20px;}
+.dlg-found{color:var(--text-meta);font-size:20px;}
 .dlg-empty{color:var(--text-sub);font-size:24px;text-align:center;padding:40px 0;}
 .result-row{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
   display:flex;align-items:center;gap:12px;cursor:pointer;width:100%;text-align:left;font-family:inherit;}
 .result-row:active{background:var(--surface-alt);}
 .result-num{font-size:24px;font-weight:700;color:var(--text);flex:1 0 0;min-width:0;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.result-state{font-size:20px;color:var(--text-sub);white-space:nowrap;flex-shrink:0;}
+.result-state{font-size:20px;color:var(--text-meta);white-space:nowrap;flex-shrink:0;}
 .tag-done{background:var(--surface-alt);color:var(--text-sub);font-size:20px;
   font-weight:700;padding:4px 8px;border-radius:var(--r-md);white-space:nowrap;}
 
@@ -406,7 +410,7 @@ html[data-theme="dark"] .card-more{background:rgba(255,255,255,.6);color:var(--g
 /* ═══ Checkbox (Figma 56:1531) ═══ */
 .cbx{width:20px;height:20px;flex-shrink:0;border-radius:var(--r-xs);border:2px solid var(--gray-5);background:transparent;
   display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
-.cbx.checked{border:none;background:var(--primary-base);color:var(--white);}
+.cbx.checked{border:none;background:var(--brand-solid);color:var(--white);}
 .cbx.checked.dim{background:var(--text-disable);}   /* 已完成品項：跟著主題的「停用」色（深色不再是亮灰） */
 
 /* ═══ Button (Figma 7:1286) ═══ */
@@ -455,9 +459,9 @@ html[data-theme="dark"] .switch i{box-shadow:0 1px 3px rgba(9,9,11,.25);}
 /* Dialog header／footer 分隔線：以負 margin 撐到 Dialog 左右邊緣，線條滿版 */
 /* 標題列固定在頂、CTA 固定在底，只有中間內容區捲動（sticky 的邊界是內容區，故 top/bottom 用 -20px 貼齊 Dialog 邊緣） */
 .modal > .dlg-head,
-.modal > .modal-title{flex-shrink:0;margin:-20px -20px 0;padding:20px 20px 20px;border-bottom:2px solid var(--border);
+.modal > .modal-title{flex-shrink:0;margin:-20px -20px 0;padding:20px 20px 20px;border-bottom:2px solid var(--divider-raised);
   position:sticky;top:-20px;z-index:2;background:var(--elevated);}
-.modal > .modal-actions{flex-shrink:0;margin:0 -20px -20px;padding:20px;border-top:2px solid var(--border);
+.modal > .modal-actions{flex-shrink:0;margin:0 -20px -20px;padding:20px;border-top:2px solid var(--divider-raised);
   position:sticky;bottom:-20px;z-index:2;background:var(--elevated);}
 .field{display:flex;flex-direction:column;gap:8px;font-size:20px;color:var(--text);}
 .field > .f-label{font-weight:700;}
@@ -466,10 +470,10 @@ html[data-theme="dark"] .switch i{box-shadow:0 1px 3px rgba(9,9,11,.25);}
 .seg{display:flex;background:var(--seg-bg);border-radius:var(--r-md);padding:4px;gap:4px;}
 .seg button{flex:1;padding:8px 12px;border:none;border-radius:var(--r-xs);background:transparent;color:var(--text);
   font-size:20px;font-weight:400;cursor:pointer;transition:background .12s,color .12s;}
-.seg button.active{background:var(--primary-base);color:var(--white);font-weight:700;}
+.seg button.active{background:var(--brand-solid);color:var(--white);font-weight:700;}
 .switch{width:48px;height:28px;border-radius:var(--r-full);border:none;background:var(--switch-off);position:relative;
   cursor:pointer;padding:0;transition:background .18s;flex-shrink:0;}
-.switch.on{background:var(--primary-base);}
+.switch.on{background:var(--brand-solid);}
 .switch i{position:absolute;top:3px;left:3px;width:22px;height:22px;background:var(--white);border-radius:var(--r-full);
   box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .18s ease-out;}
 .switch.on i{left:23px;}
@@ -493,7 +497,7 @@ html[data-theme="dark"] .switch i{box-shadow:0 1px 3px rgba(9,9,11,.25);}
 .notif-list{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;overflow-y:auto;}
 .notif-dialog .notif-empty{flex:1 1 auto;display:flex;align-items:center;justify-content:center;}
 /* 清單式：不用卡片，每則之間以分隔線區隔；未讀靠左側圓點＋粗體辨識 */
-.notif-item{background:transparent;border:none;border-bottom:2px solid var(--border);border-radius:0;padding:16px 4px;
+.notif-item{background:transparent;border:none;border-bottom:2px solid var(--divider-raised);border-radius:0;padding:16px 4px;
   display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;font-family:inherit;}
 .notif-item:last-child{border-bottom:none;}
 .notif-item.unread{cursor:pointer;}
