@@ -12,28 +12,27 @@
    Design tokens — Figma: KDS 2.0 (46CVabC5jHfBAZLA0H5W8L, 7:1031)
    ═══════════════════════════════════════════════════════════════ */
 :root{
+  /* ── Primitive：Figma「Color」頁（node 7:158）一對一對應，命名同 Figma，不分淺深 ── */
   /* Brand */
-  --brand-primary:#58B6A8;
-  --brand-primary-dark:#279684;
-  --brand-secondary:#272A3A;
   --brand-bg:#F5F8F9;
+  --primary-base:#58B6A8;   --primary-shade:#279684;   --primary-tint:#E1F2F0;
+  --secondary-base:#272A3A; --secondary-shade:#181A25; --secondary-tint:#6C739D;
   /* Gray */
-  --white:#FFFFFF; --g1:#F4F4F5; --g2:#E4E4E7; --g3:#D4D4D8; --g4:#A1A1AA;
-  /* Text */
-  --t-primary:#3F3F46; --t-secondary:#71717A; --t-disable:#D4D4D8;
+  --white:#FFFFFF; --black:#000000;
+  --gray-1:#F4F4F5; --gray-2:#E4E4E7; --gray-3:#D4D4D8; --gray-4:#A1A1AA; --gray-5:#71717A;
+  --gray-6:#52525B; --gray-7:#3F3F46; --gray-8:#27272A; --gray-9:#18181B; --gray-10:#09090B;
   /* State */
-  --error:#FF8A80; --error-light:#FDEDED;
-  --warning:#FFAB40; --warning-light:#FFF4E5;
-  --info:#5292D9; --info-dark:#014361;
-  /* 服務類型固定色票（PRD §2.2 色塊顯示 / §5.3 不開放客製，深淺模式共用）
-     icon 一律白色，換色票時請留意與白色的對比 */
-  --svc-dinein:#FFAB40;      /* 內用 */
-  --svc-takeout:#5292D9;     /* 外帶 */
-  --svc-delivery:#9A82CE;    /* 外送 */
-  --svc-ubereats:#06C167;    /* Uber Eats 品牌色 */
-  --svc-foodpanda:#D70F64;   /* foodpanda 品牌色 */
-  /* 卡片標題列底色（Figma 204:4174）：依服務類型 */
-  --head-dinein:#FFE6C6; --head-takeout:#D2E7FF; --head-delivery:#EBE5F9; --head-ubereats:#D0F0E0; --head-foodpanda:#FFD4E6;
+  --alert:#D0342C;
+  --error-base:#FF8A80;   --error-shade:#5F2120;   --error-tint:#FDEDED;
+  --warning-base:#FFAB40; --warning-shade:#663C00; --warning-tint:#FFF4E5;
+  --info-base:#5292D9;    --info-shade:#014361;    --info-tint:#E5F6FD;
+  --success-base:#66BB6A; --success-shade:#1E4620; --success-tint:#EDF7ED;
+  /* Service Color（PRD §2.2 色塊顯示 / §5.3 不開放客製；Base 兩模式共用，UE／FP 為第三方品牌色不隨主題調整） */
+  --eat-in-base:#FFAB40;   --eat-in-shade:#705029;   --eat-in-tint:#FFE6C6;
+  --takeout-base:#5292D9;  --takeout-shade:#2E4663;  --takeout-tint:#D2E7FF;
+  --delivery-base:#9A82CE; --delivery-shade:#49405F; --delivery-tint:#EBE5F9;
+  --ue-base:#06C167;       --ue-shade:#115838;       --ue-tint:#D0F0E0;
+  --fp-base:#D70F64;       --fp-shade:#611537;       --fp-tint:#FFD4E6;
   /* Radius */
   --r-xs:4px; --r-md:8px; --r-xl:16px; --r-full:9999px;
   /* Shadow4 */
@@ -44,70 +43,113 @@
   --item-fs:32px; --attr-fs:24px;
 }
 
-/* ── Light theme ───────────────────────────────────────────── */
+/* ── Semantic：每個變數只 alias 到上面的 Primitive，不寫裸色碼（對應 Figma Semantic collection 的 Light / Dark mode）──
+   文件：kds-semantic-tokens.md。灰階規則（深色）：高一階 = 更亮，可按的東西一律 Gray 6。 */
+
+/* Light */
 html[data-theme="light"]{
-  --page:#F5F8F9;
-  --surface:#FFFFFF;
-  --surface-alt:#F4F4F5;
-  --border:#D4D4D8;
-  --pressed:#E4E4E7;
-  --text:#3F3F46;
-  --text-sub:#71717A;
-  --text-disable:#D4D4D8;
-  --overlay:rgba(24,24,27,0.4);
-  --error-strong:#D0342C;    /* 徽章／電量危險：error #FF8A80 壓暗至白底 AA */
-  --warning-strong:#B26A00;  /* 電量偏低：warning #FFAB40 壓暗至白底 AA */
-  --meta-bg:#FFFFFF;
-  --meta-ready-bg:#EAF2FB;
-  --state-ready:#5292D9;
-  --notif-unread-bg:#E1F2F0;   /* 設計稿：通知未讀卡片底色（外框與圓點用 brand-primary #58B6A8）*/
-  --seat:#D0342C;            /* 保留：PRD §2.2 的後結座位紅字。目前不顯示（已由加點標籤取代） */
-  --toast-bg:#3F3F46;
-  --toast-fg:#FFFFFF;
-  --net-off-bg:#D0342C;   /* 斷線橫幅：白字對比 ≥ 5:1 */
-  --cta-brand-bg:#58B6A8;
-  --cta-brand-pressed:#279684;
-  --dropdown-item-bg:#E4E4E7;
-  --dropdown-item-border:transparent;
-  --dropdown-item-pressed:#D4D4D8;
-  --menu-shadow:0px 24px 40px rgba(24,24,27,0.18), 0px 0px 1px rgba(24,24,27,0.16);
+  /* 背景層級 */
+  --page:var(--brand-bg);
+  --surface:var(--white);
+  --surface-alt:var(--gray-1);
+  --item-bg:var(--brand-bg);
+  --note-bg:var(--white);
+  --meta-bg:var(--white);
+  --elevated:var(--white);
+  --elevated-border:transparent;
+  /* 線 */
+  --border:var(--gray-3);
+  --item-border:var(--gray-3);
   --menu-ring:transparent;
+  /* 控制項 */
+  --ctrl-bg:var(--gray-1);
+  --ctrl-border:var(--gray-3);
+  --dropdown-item-bg:var(--gray-2);
+  --dropdown-item-border:transparent;
+  --dropdown-item-pressed:var(--gray-3);
+  --disabled-bg:var(--gray-1);
+  --disabled-fg:var(--gray-3);
+  --seg-bg:var(--gray-1);
+  --switch-off:var(--gray-2);
+  --input-bg:var(--gray-1);
+  --input-border:var(--gray-3);
+  --input-ph:var(--gray-3);
+  /* 文字 */
+  --text:var(--gray-7);
+  --text-sub:var(--gray-5);
+  --text-disable:var(--gray-3);
+  --text-meta:var(--gray-5);       /* 桌號、品項屬性／備註 */
+  --icon-paid:var(--gray-5);
+  /* 狀態 */
+  --error-strong:var(--alert);
+  --error-light:var(--error-tint);
+  --on-error:var(--white);
+  /* 卡片標題列 */
+  --header-eat-in:var(--eat-in-tint);
+  --header-takeout:var(--takeout-tint);
+  --header-delivery:var(--delivery-tint);
+  --header-ue:var(--ue-tint);
+  --header-fp:var(--fp-tint);
+  /* CTA、其他 */
+  --cta-brand-bg:var(--primary-base);
+  --cta-brand-pressed:var(--primary-shade);
+  --toast-bg:var(--gray-7);
+  --toast-fg:var(--white);
+  --overlay:rgba(24,24,27,0.4);    /* Gray 9 × 40%（Variable 不能 alias 透明度，透明度另設） */
+  --menu-shadow:0px 24px 40px rgba(24,24,27,0.18), 0px 0px 1px rgba(24,24,27,0.16);
 }
 
-/* ── Dark theme (WCAG AA/AAA tuned) ────────────────────────── */
+/* Dark */
 html[data-theme="dark"]{
-  --page:#0A0C10;
-  --surface:#1E232E;
-  --surface-alt:#2A2F3B;
-  --border:#404656;
-  --pressed:#525866;
-  --text:#ECEDEE;
-  --text-sub:#B8BCC4;
-  --text-disable:#7A7F8C;
-  --overlay:rgba(0,0,0,0.65);
-  --error-strong:#FF8A80;    /* 深色模式改用亮紅，對 surface ≈ 7:1 */
-  --warning-strong:#FFAB40;
-  --meta-bg:#2A2F3B;
-  --head-dinein:color-mix(in srgb, var(--svc-dinein) 22%, var(--surface));
-  --head-takeout:color-mix(in srgb, var(--svc-takeout) 22%, var(--surface));
-  --head-delivery:color-mix(in srgb, var(--svc-delivery) 22%, var(--surface));
-  --head-ubereats:color-mix(in srgb, var(--svc-ubereats) 22%, var(--surface));
-  --head-foodpanda:color-mix(in srgb, var(--svc-foodpanda) 22%, var(--surface));
-  --meta-ready-bg:#16304A;
-  --state-ready:#5292D9;
-  --notif-unread-bg:#16332F;   /* 深色模式對應色，維持與淺色相同的「淡品牌綠」語意 */
-  --seat:#FF8A80;            /* 深色模式改用亮紅，對 surface ≈ 7:1 */
-  --toast-bg:#3F3F46;
-  --toast-fg:#FFFFFF;
-  --cta-brand-bg:#279684;
-  --cta-brand-pressed:#155F53;
-  --dropdown-item-bg:#6B7387;
-  --dropdown-item-border:#8089A0;
-  --dropdown-item-pressed:#8089A0;
-  --menu-shadow:0px 16px 40px rgba(0,0,0,0.55), 0px 4px 10px rgba(0,0,0,0.4);
-  --menu-ring:#404656;
-  --error-light:#3A1F1D;
-  --warning-light:#3A2C16;
+  /* 背景層級：Gray 10 頁面 → 9 卡片 → 8 內容區塊／Dialog */
+  --page:var(--gray-10);
+  --surface:var(--gray-9);
+  --surface-alt:var(--gray-8);
+  --item-bg:var(--gray-8);
+  --note-bg:var(--gray-8);
+  --meta-bg:var(--gray-9);
+  --elevated:var(--gray-8);
+  --elevated-border:var(--gray-6);
+  /* 線 */
+  --border:var(--gray-7);
+  --item-border:var(--gray-6);
+  --menu-ring:var(--gray-6);
+  /* 控制項：可按的東西 Gray 6，比底色亮一大階 */
+  --ctrl-bg:var(--gray-6);
+  --ctrl-border:var(--gray-5);
+  --dropdown-item-bg:var(--gray-6);
+  --dropdown-item-border:transparent;
+  --dropdown-item-pressed:var(--gray-5);
+  --disabled-bg:var(--gray-7);      /* 比 surface／dialog 亮一階，但比可按的 Gray 6 暗 */
+  --disabled-fg:var(--gray-5);
+  --seg-bg:var(--gray-10);
+  --switch-off:var(--gray-5);
+  --input-bg:var(--gray-10);
+  --input-border:var(--gray-4);
+  --input-ph:var(--gray-4);
+  /* 文字 */
+  --text:var(--gray-2);
+  --text-sub:var(--gray-4);
+  --text-disable:var(--gray-6);
+  --text-meta:var(--gray-2);       /* 桌號、品項屬性／備註（與主要文字同色） */
+  --icon-paid:var(--gray-2);
+  /* 狀態：底用 Shade、字用 Base */
+  --error-strong:var(--error-base);
+  --error-light:var(--error-shade);
+  --on-error:var(--gray-10);
+  /* 卡片標題列：各服務 Shade */
+  --header-eat-in:var(--eat-in-shade);
+  --header-takeout:var(--takeout-shade);
+  --header-delivery:var(--delivery-shade);
+  --header-ue:var(--ue-shade);
+  --header-fp:var(--fp-shade);
+  /* CTA、其他 */
+  --cta-brand-bg:var(--primary-base);
+  --cta-brand-pressed:var(--primary-shade);
+  --toast-bg:var(--gray-7);
+  --toast-fg:var(--white);
+  --overlay:rgba(9,9,11,0.72);     /* Gray 10 × 72% */
+  --menu-shadow:0px 16px 40px rgba(9,9,11,0.6), 0px 0px 1px rgba(255,255,255,0.08);
 }
 
 /* ═══ Base ═══ */
@@ -147,30 +189,24 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .content{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
 
 /* ═══ IconButton (Figma 70:749) ═══ */
-.iconbtn{width:60px;height:60px;padding:12px;border-radius:var(--r-md);border:2px solid var(--border);
-  background:var(--surface-alt);color:var(--text);display:inline-flex;align-items:center;justify-content:center;
+.iconbtn{width:60px;height:60px;padding:12px;border-radius:var(--r-md);border:2px solid var(--ctrl-border);
+  background:var(--ctrl-bg);color:var(--text);display:inline-flex;align-items:center;justify-content:center;
   cursor:pointer;user-select:none;transition:background .08s linear;}
-.iconbtn:active{background:var(--g2);}
+.iconbtn:active{background:var(--gray-2);}
 /* Dialog 標題列的 [X]：底色／外框與 KDS 灰色按鈕（.btn.gray）一致 */
 .iconbtn.sm{width:48px;height:48px;padding:10px;
   background:var(--dropdown-item-bg);border:2px solid var(--dropdown-item-border);}
 .iconbtn.sm:active{background:var(--dropdown-item-pressed);}
 .iconbtn.sm .icon{width:28px;height:28px;}
 .iconbtn .icon{width:36px;height:36px;}
-/* 未讀數徽章（Toolbar 通知）*/
 .iconbtn{position:relative;}
-.rail-badge{position:absolute;top:-6px;right:-6px;min-width:26px;height:26px;padding:0 5px;border-radius:var(--r-full);
-  background:var(--error-strong);color:var(--white);font-size:16px;font-weight:700;
-  /* 不加白色外框；用 flex 置中才不會被 line-height 推偏 */
-  display:flex;align-items:center;justify-content:center;line-height:1;
-  font-variant-numeric:tabular-nums;}
 /* 電量狀態（PRD §2.3 — 低於 20% / 10% 需提示）*/
 .rail-bottom{margin-top:auto;display:flex;flex-direction:column;gap:12px;align-items:center;}
 .battery{width:60px;padding:6px 0 4px;border-radius:var(--r-md);display:flex;flex-direction:column;align-items:center;gap:2px;
   color:var(--text);user-select:none;   /* 與側欄 icon 同色 */
   /* 原型模擬用：點擊切換電量斷點。正式版是純狀態顯示，不可點 */
   border:none;background:transparent;font-family:inherit;cursor:pointer;}
-.battery:hover{outline:1px dashed var(--g4);outline-offset:-1px;}   /* 虛線＝模擬功能，與右上角開關同語彙 */
+.battery:hover{outline:1px dashed var(--gray-4);outline-offset:-1px;}   /* 虛線＝模擬功能，與右上角開關同語彙 */
 .battery:active{opacity:.6;}
 .battery .bat-pct{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;}
 /* 20% 與 10% 同樣用紅色警示（只換 icon 與文字色，不加底色）；
@@ -180,18 +216,18 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 
 /* ═══ ChannelTabs ═══ */
 .tabs{display:flex;gap:12px;align-items:center;}
-.tab{background:var(--surface-alt);color:var(--text);border:2px solid var(--border);border-radius:var(--r-md);
+.tab{background:var(--ctrl-bg);color:var(--text);border:2px solid var(--ctrl-border);border-radius:var(--r-md);
   height:60px;padding:12px 20px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;
   user-select:none;transition:background .08s linear;flex-shrink:0;white-space:nowrap;}
-.tab:active{background:var(--g2);}
-.tab.active{background:var(--brand-primary);color:var(--white);border-color:transparent;font-weight:700;}
+.tab:active{background:var(--gray-2);}
+.tab.active{background:var(--primary-base);color:var(--white);border-color:transparent;font-weight:700;}
 .tab .t-label{font-size:24px;font-weight:inherit;}
 .tab .t-count{font-size:20px;font-weight:inherit;}
 
 /* ═══ 原型模擬開關（非產品功能）═══
    有/無 CDS、前/後結 會改變 PRD 的流程與選單，用虛線框與產品 UI 區隔。 */
 .simbar{position:relative;z-index:210;margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;
-  border:1px dashed var(--g4);border-radius:var(--r-md);padding:8px 12px;}
+  border:1px dashed var(--gray-4);border-radius:var(--r-md);padding:8px 12px;}
 .simbar .sim-tag{font-size:14px;font-weight:700;color:var(--text-sub);letter-spacing:1px;flex-shrink:0;}
 .sim-group{display:flex;align-items:center;gap:8px;}
 .sim-group .sim-label{font-size:16px;font-weight:700;color:var(--text-sub);white-space:nowrap;}
@@ -202,8 +238,8 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 /* ═══ 危險操作（PRD §3.5 #4 — 置於選單最底，以分隔線與變色隔開）═══ */
 .menu-sep{height:2px;background:var(--border);flex-shrink:0;margin:-8px -20px;}
 .btn.danger{background:var(--error-light);color:var(--error-strong);border:2px solid var(--error-strong);}
-.btn.danger:active{background:var(--error-strong);color:var(--white);}
-.btn.danger:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:transparent;}
+.btn.danger:active{background:var(--error-strong);color:var(--on-error);}
+.btn.danger:disabled{background:var(--disabled-bg);color:var(--disabled-fg);border-color:transparent;}
 .modal.confirm-dialog{width:420px;gap:12px;}
 .confirm-body{font-size:20px;line-height:1.4;color:var(--text);}
 .confirm-body .c-num{font-weight:700;}
@@ -227,11 +263,11 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .dlg-head-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
 .dlg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .dlg-title{font-size:24px;font-weight:700;color:var(--text);}
-.dlg-display{background:var(--surface-alt);border:2px solid var(--border);border-radius:var(--r-md);
+.dlg-display{background:var(--input-bg);border:2px solid var(--input-border);border-radius:var(--r-md);
   padding:12px 16px;height:76px;flex-shrink:0;display:flex;align-items:center;font-size:32px;font-weight:700;
   color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:2px;overflow:hidden;}
 /* 注意：修飾詞不可叫 .empty —— 會撞到主畫面空狀態的 .empty{margin:auto} */
-.dlg-display.is-empty{color:var(--text-disable);font-size:20px;font-weight:400;letter-spacing:normal;}
+.dlg-display.is-empty{color:var(--input-ph);font-size:20px;font-weight:400;letter-spacing:normal;}
 .keypad{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;
   grid-auto-rows:minmax(0,1fr);flex:1 1 auto;min-height:280px;max-height:480px;}
 .keypad .key{font-size:28px;min-width:0;}
@@ -268,19 +304,18 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .pager .iconbtn{background:var(--dropdown-item-bg);border-color:var(--dropdown-item-border);}
 .pager .iconbtn:active{background:var(--dropdown-item-pressed);}
 .pager .iconbtn:disabled{border-color:transparent;}   /* 停用同 .btn.gray:disabled：淺灰底、無外框 */
-.iconbtn:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:var(--border);cursor:not-allowed;}
+.iconbtn:disabled{background:var(--disabled-bg);color:var(--disabled-fg);border-color:var(--border);cursor:not-allowed;}
 
 /* ═══ OrderCard (Figma 32:210) ═══ */
 .card{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-xl);
   display:flex;flex-direction:column;min-width:0;overflow:hidden;}
-.card.ready{border-color:var(--state-ready);}   /* PRD §3.1 — 待取餐改色 */
 .card-head{border-bottom:2px solid var(--border);border-top-left-radius:14px;border-top-right-radius:14px;
   padding:12px;display:flex;flex-direction:column;gap:8px;}
-.card-head[data-type='dine-in']{background:var(--head-dinein);}
-.card-head[data-type='takeout']{background:var(--head-takeout);}
-.card-head[data-type='delivery']{background:var(--head-delivery);}
-.card-head[data-type='ubereats']{background:var(--head-ubereats);}
-.card-head[data-type='foodpanda']{background:var(--head-foodpanda);}
+.card-head[data-type='dine-in']{background:var(--header-eat-in);}
+.card-head[data-type='takeout']{background:var(--header-takeout);}
+.card-head[data-type='delivery']{background:var(--header-delivery);}
+.card-head[data-type='ubereats']{background:var(--header-ue);}
+.card-head[data-type='foodpanda']{background:var(--header-fp);}
 .card-head-row{display:flex;align-items:center;gap:8px;width:100%;justify-content:space-between;}
 .card-title{display:flex;align-items:center;gap:8px;flex:1 0 0;min-width:0;}
 .card-num{color:var(--text);font-size:var(--num-size,28px);font-weight:700;
@@ -301,14 +336,13 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   .mq.marquee > .mq-track{animation:none;transform:translateX(var(--mq-shift,0));}
 }
 /* 空間不足時桌號先讓位，訂單編號（恆顯示）最後才截斷 */
-.card-table{color:var(--text-sub);font-size:20px;font-weight:400;white-space:nowrap;
+.card-table{color:var(--text-meta);font-size:20px;font-weight:400;white-space:nowrap;
   flex:0 500 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .badges{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.paid-icon{color:#71717A;display:inline-flex;align-items:center;justify-content:center;}
+.paid-icon{color:var(--icon-paid);display:inline-flex;align-items:center;justify-content:center;}
 /* 卡片資訊列：進單時間（左）＋ 預約取餐時間（右，預約單才有）*/
 .card-meta{background:var(--meta-bg);border-radius:var(--r-md);padding:4px 12px;
   display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;}
-.card.ready .card-meta{background:var(--meta-ready-bg);}
 .card-meta .m-time{display:inline-flex;align-items:center;gap:4px;color:var(--text);
   font-size:20px;font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .card-meta .m-sched{display:inline-flex;align-items:center;gap:4px;color:var(--text);
@@ -322,21 +356,22 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 /* 內容被截斷時，清單底緣的「還有 N 項，滑動查看」（Figma 204:4174）：黑 40% 滿版條、白字 20px；
    純文字、不吃點擊（點擊穿透到下方品項）。 */
 .card-more{display:none;position:absolute;left:0;right:0;bottom:0;align-items:center;justify-content:center;
-  padding:4px 12px;background:rgba(0,0,0,.4);color:#fff;font-size:20px;font-weight:400;line-height:normal;
+  padding:4px 12px;background:rgba(0,0,0,.4);color:var(--white);font-size:20px;font-weight:400;line-height:normal;
   white-space:nowrap;pointer-events:none;user-select:none;}
 .card-items-wrap.has-more .card-more{display:flex;}
+html[data-theme="dark"] .card-more{background:rgba(255,255,255,.6);color:var(--gray-10);}   /* 深色：白底 60% 透明度、最深灰字（不用純黑） */
 .card-more.idle{visibility:hidden;}
 .card-foot{border-top:2px solid var(--border);border-bottom-left-radius:14px;border-bottom-right-radius:14px;
   padding:12px;display:flex;gap:10px;align-items:stretch;position:relative;}
 
 /* ═══ ChannelTag ═══ */
 .channel-tile{width:40px;height:40px;border-radius:var(--r-md);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
-.channel-tile.icon-tile{background:var(--svc);color:#FFFFFF;}
+.channel-tile.icon-tile{background:var(--svc);color:var(--white);}
 .channel-tile.logo-tile{padding:3px 7px;overflow:hidden;}
 .channel-tile.logo-tile svg{display:block;}
 
 /* ═══ CustomerNote ═══ */
-.note{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
+.note{background:var(--note-bg);border:2px solid var(--item-border);border-radius:var(--r-md);padding:12px;
   display:flex;gap:8px;align-items:flex-start;width:100%;}
 .note-body{flex:1 0 0;min-width:0;color:var(--text);font-size:20px;font-weight:400;line-height:1.3;}
 .note-body .note-line-memo{font-weight:700;}   /* 備註會改變出餐內容，粗體與客人資料區隔 */
@@ -344,35 +379,35 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 
 /* ═══ OrderItem (Figma 31:141) ═══ */
 .item-wrap{position:relative;}
-.item{background:var(--page);border:2px solid var(--border);border-radius:var(--r-md);padding:12px;
+.item{background:var(--item-bg);border:2px solid var(--item-border);border-radius:var(--r-md);padding:12px;
   display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;cursor:pointer;
   user-select:none;-webkit-user-select:none;}
 .item.is-done{background:var(--surface-alt);text-decoration:line-through;text-decoration-color:var(--text-disable);}
 .item.head{border-bottom-left-radius:0;border-bottom-right-radius:0;}
 .item.tail{border-top-left-radius:0;border-top-right-radius:0;border-top-width:0;}
-.item-bar{width:4px;align-self:stretch;background:var(--g4);border-radius:var(--r-full);flex-shrink:0;}
-.item.is-done .item-bar{background:var(--g3);}
+.item-bar{width:4px;align-self:stretch;background:var(--gray-4);border-radius:var(--r-full);flex-shrink:0;}
+.item.is-done .item-bar{background:var(--gray-3);}
 .item-main{display:flex;flex-direction:column;gap:8px;align-items:flex-start;flex:1 0 0;min-width:0;}
 .item-row{display:flex;gap:8px;align-items:center;width:100%;}
 .item-name{flex:1 1 auto;min-width:2.5em;color:var(--text);font-size:var(--item-fs,32px);font-weight:700;line-height:1.1;}
 /* 加點標籤（品項層級）—— 外框線而非實心：這是標籤不是按鈕，實心品牌綠會跟「出餐」CTA 混淆。
    也不用紅色：紅色已指派給危險操作（PRD §5.3 一色一義）。*/
-.item-addon{background:transparent;color:var(--brand-primary);border:2px solid var(--brand-primary);
+.item-addon{background:transparent;color:var(--primary-base);border:2px solid var(--primary-base);
   font-size:16px;font-weight:700;padding:0 6px;border-radius:var(--r-xs);
   white-space:nowrap;flex-shrink:0;line-height:1.5;}
 .item.is-done .item-addon{color:var(--text-disable);border-color:var(--text-disable);}
 .item-qty{color:var(--text);font-size:var(--attr-fs,24px);font-weight:700;white-space:nowrap;flex-shrink:0;}
 .item.is-done .item-name,.item.is-done .item-qty{color:var(--text-disable);}
-.item-notes{color:var(--text-sub);font-size:20px;font-weight:400;width:100%;line-height:1.3;}
+.item-notes{color:var(--text-meta);font-size:20px;font-weight:400;width:100%;line-height:1.3;}
 /* PRD：「品項文字大小」影響品項名稱、屬性、數量與品項備註，備註與其他資訊維持固定字級 */
 .item-notes.item-attr{font-size:var(--attr-fs,24px);}
 .item.is-done .item-notes{color:var(--text-disable);}
 
 /* ═══ Checkbox (Figma 56:1531) ═══ */
-.cbx{width:20px;height:20px;flex-shrink:0;border-radius:var(--r-xs);border:2px solid #71717A;background:transparent;
+.cbx{width:20px;height:20px;flex-shrink:0;border-radius:var(--r-xs);border:2px solid var(--gray-5);background:transparent;
   display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
-.cbx.checked{border:none;background:var(--brand-primary);color:var(--white);}
-.cbx.checked.dim{background:var(--t-disable);}
+.cbx.checked{border:none;background:var(--primary-base);color:var(--white);}
+.cbx.checked.dim{background:var(--text-disable);}   /* 已完成品項：跟著主題的「停用」色（深色不再是亮灰） */
 
 /* ═══ Button (Figma 7:1286) ═══ */
 .btn{border:none;padding:16px;border-radius:var(--r-md);font-size:24px;font-weight:700;
@@ -380,16 +415,16 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .btn.full{flex:1 0 0;}
 .btn.brand{background:var(--cta-brand-bg);color:var(--white);}
 .btn.brand:active{background:var(--cta-brand-pressed);}
-.btn.blue{background:var(--info);color:var(--white);}
-.btn.blue:active{background:var(--info-dark);}
+.btn.blue{background:var(--info-base);color:var(--white);}
+.btn.blue:active{background:var(--info-shade);}
 .btn.gray{background:var(--dropdown-item-bg);color:var(--text);border:2px solid var(--dropdown-item-border);}
 .btn.gray:active{background:var(--dropdown-item-pressed);}
 .btn.square{flex-shrink:0;}
 /* 樣式表：實心按鈕停用 —— 底色 #F4F4F5、文字 #D4D4D8、不加外框（灰／綠／藍／紅一致）*/
-.btn:disabled{background:var(--surface-alt);color:var(--text-disable);border-color:transparent;cursor:not-allowed;}
+.btn:disabled{background:var(--disabled-bg);color:var(--disabled-fg);border-color:transparent;cursor:not-allowed;}
 
 /* ═══ DropdownMenu (Figma 56:2601) ═══ */
-.menu{position:absolute;background:var(--surface);box-shadow:var(--menu-shadow);border:1px solid var(--menu-ring);
+.menu{position:absolute;background:var(--elevated);box-shadow:var(--menu-shadow);border:1px solid var(--menu-ring);
   border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:20px;width:240px;z-index:50;}
 .menu.up{bottom:100%;left:0;margin-bottom:8px;}
 .menu.down{top:calc(100% + 8px);left:0;}
@@ -397,11 +432,13 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 
 /* ═══ 斷線遮罩（Figma 269:19645）：全螢幕黑 60% 遮罩，置中「等待網路連接...」＋ loading；遮罩會擋住所有操作 ═══ */
 .net-banner{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;gap:12px;
-  background:rgba(0,0,0,.6);color:#fff;font-size:36px;font-weight:700;text-align:center;animation:v2FadeIn .2s ease-out;}
+  background:rgba(0,0,0,.6);color:var(--white);font-size:36px;font-weight:700;text-align:center;animation:v2FadeIn .2s ease-out;}
 @keyframes v2FadeIn{from{opacity:0}to{opacity:1}}
-.net-spin{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;animation:netSpin .9s linear infinite;flex-shrink:0;}
+.net-spin{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:var(--white);animation:netSpin .9s linear infinite;flex-shrink:0;}
 .net-spin.lottie{border:none;border-radius:0;animation:none;}
 .net-spin.lottie svg{display:block;width:100%;height:100%;}
+html[data-theme="dark"] .net-banner{background:rgba(9,9,11,.6);}   /* 深色：遮罩用 z-950，不用純黑 */
+html[data-theme="dark"] .switch i{box-shadow:0 1px 3px rgba(9,9,11,.25);}
 .net-banner > span{display:flex;align-items:center;line-height:1;}   /* 文字與動畫同為 flex 置中，上下對齊 */   /* 已載入 lottie：移除 CSS 備援轉圈，只留 json 動畫 */
 @keyframes netSpin{to{transform:rotate(360deg)}}
 
@@ -412,24 +449,27 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 
 /* ═══ SettingsModal ═══ */
 .modal-overlay{position:fixed;inset:0;background:var(--overlay);z-index:80;display:flex;align-items:center;justify-content:center;}
-.modal{background:var(--surface);border-radius:var(--r-xl);padding:20px;box-shadow:var(--shadow4);width:460px;
+.modal{background:var(--elevated);border:1px solid var(--elevated-border);border-radius:var(--r-xl);padding:20px;box-shadow:var(--shadow4);width:460px;
   max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
 .modal-title{font-size:24px;font-weight:700;color:var(--text);}
 /* Dialog header／footer 分隔線：以負 margin 撐到 Dialog 左右邊緣，線條滿版 */
+/* 標題列固定在頂、CTA 固定在底，只有中間內容區捲動（sticky 的邊界是內容區，故 top/bottom 用 -20px 貼齊 Dialog 邊緣） */
 .modal > .dlg-head,
-.modal > .modal-title{flex-shrink:0;margin:0 -20px;padding:0 20px 20px;border-bottom:2px solid var(--border);}
-.modal > .modal-actions{flex-shrink:0;margin:0 -20px;padding:20px 20px 0;border-top:2px solid var(--border);}
+.modal > .modal-title{flex-shrink:0;margin:-20px -20px 0;padding:20px 20px 20px;border-bottom:2px solid var(--border);
+  position:sticky;top:-20px;z-index:2;background:var(--elevated);}
+.modal > .modal-actions{flex-shrink:0;margin:0 -20px -20px;padding:20px;border-top:2px solid var(--border);
+  position:sticky;bottom:-20px;z-index:2;background:var(--elevated);}
 .field{display:flex;flex-direction:column;gap:8px;font-size:20px;color:var(--text);}
 .field > .f-label{font-weight:700;}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:20px;color:var(--text);}
 .row > .f-label{font-weight:700;}
-.seg{display:flex;background:var(--surface-alt);border-radius:var(--r-md);padding:4px;gap:4px;}
+.seg{display:flex;background:var(--seg-bg);border-radius:var(--r-md);padding:4px;gap:4px;}
 .seg button{flex:1;padding:8px 12px;border:none;border-radius:var(--r-xs);background:transparent;color:var(--text);
   font-size:20px;font-weight:400;cursor:pointer;transition:background .12s,color .12s;}
-.seg button.active{background:var(--brand-primary);color:var(--white);font-weight:700;}
-.switch{width:48px;height:28px;border-radius:var(--r-full);border:none;background:var(--g2);position:relative;
+.seg button.active{background:var(--primary-base);color:var(--white);font-weight:700;}
+.switch{width:48px;height:28px;border-radius:var(--r-full);border:none;background:var(--switch-off);position:relative;
   cursor:pointer;padding:0;transition:background .18s;flex-shrink:0;}
-.switch.on{background:var(--brand-primary);}
+.switch.on{background:var(--primary-base);}
 .switch i{position:absolute;top:3px;left:3px;width:22px;height:22px;background:var(--white);border-radius:var(--r-full);
   box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .18s ease-out;}
 .switch.on i{left:23px;}
@@ -444,7 +484,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .menu.item-menu{position:fixed;z-index:60;}
 /* 箭頭：指向被長按的品項（面板在上方 → 箭頭朝下；放不下改放下方 → 箭頭朝上） */
 .item-menu::after{content:'';position:absolute;left:var(--arrow-x,32px);bottom:-8px;width:14px;height:14px;margin-left:-7px;
-  background:var(--surface);border:1px solid var(--menu-ring);border-top:none;border-left:none;transform:rotate(45deg);}
+  background:var(--elevated);border:1px solid var(--menu-ring);border-top:none;border-left:none;transform:rotate(45deg);}
 .item-menu.below::after{bottom:auto;top:-8px;border:1px solid var(--menu-ring);border-bottom:none;border-right:none;}   /* fixed：避免被卡片的捲動容器裁切；位置由 placeItemMenu 計算 */   /* 樣式沿用 .menu（同訂單下方選單） */
 
 /* ═══ 通知 Dialog（PRD §2.3 — 商店通知）═══ */
@@ -459,7 +499,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .notif-item.unread{cursor:pointer;}
 .notif-item.unread:active{background:var(--surface-alt);}
 .notif-dot{width:10px;height:10px;border-radius:var(--r-full);background:transparent;flex-shrink:0;margin-top:9px;}
-.notif-item.unread .notif-dot{background:var(--brand-primary);}
+.notif-item.unread .notif-dot{background:var(--primary-base);}
 .notif-body{flex:1 0 0;min-width:0;display:flex;flex-direction:column;gap:4px;}
 .notif-time{font-size:20px;font-weight:400;color:var(--text-sub);font-variant-numeric:tabular-nums;}
 .notif-text{font-size:24px;font-weight:700;color:var(--text);line-height:1.3;word-break:break-word;}
@@ -502,7 +542,7 @@ const STR = {
     densityLabel:'版面密度', mergeItems:'合併相同品項',
     prevPage:'上一頁', nextPage:'下一頁',
     sortLabel:'訂單排序', sortAsc:'時間正序', sortDesc:'時間倒序',
-    showOrderInfo:'訂單資訊顯示', notifyNewOrder:'通知提示',
+    showOrderInfo:'訂單資訊顯示', notifyNewOrder:'通知提示', themeLabel:'顏色模式', themeLight:'淺色', themeDark:'深色',
     sizeSmall:'小', sizeMedium:'中', sizeLarge:'大',
     paid:'已付款', unpaid:'未付款',
     // 通知 / 電量（PRD §2.3 Toolbar）
@@ -543,7 +583,7 @@ const STR = {
     densityLabel:'Layout density', mergeItems:'Merge duplicate items',
     prevPage:'Previous page', nextPage:'Next page',
     sortLabel:'Order sort', sortAsc:'Oldest first', sortDesc:'Newest first',
-    showOrderInfo:'Show order info', notifyNewOrder:'New-order voice alert',
+    showOrderInfo:'Show order info', notifyNewOrder:'New-order voice alert', themeLabel:'Color mode', themeLight:'Light', themeDark:'Dark',
     sizeSmall:'S', sizeMedium:'M', sizeLarge:'L',
     paid:'Paid', unpaid:'Unpaid',
     // 通知 / 電量（PRD §2.3 Toolbar）
@@ -810,11 +850,11 @@ const LOGO_FOODPANDA = '<svg width="28" height="28" viewBox="0 0 28 28.3066" fil
 // PRD §2.2 — 服務類型以色塊顯示，固定色票（§5.3 不開放客製）。
 // 色值集中在 :root 的 --svc-* token，要改配色只動那四行即可。
 const CHANNEL_TILE = {
-  'dine-in':  { kind:'icon', icon:'utensils',    color:'var(--svc-dinein)' },
-  takeout:    { kind:'icon', icon:'shoppingBag', color:'var(--svc-takeout)' },
-  delivery:   { kind:'icon', icon:'scooter',     color:'var(--svc-delivery)' },
-  ubereats:   { kind:'logo', color:'var(--svc-ubereats)',  svg:LOGO_UBEREATS },
-  foodpanda:  { kind:'logo', color:'var(--svc-foodpanda)', svg:LOGO_FOODPANDA },
+  'dine-in':  { kind:'icon', icon:'utensils',    color:'var(--eat-in-base)' },
+  takeout:    { kind:'icon', icon:'shoppingBag', color:'var(--takeout-base)' },
+  delivery:   { kind:'icon', icon:'scooter',     color:'var(--delivery-base)' },
+  ubereats:   { kind:'logo', color:'var(--ue-base)',  svg:LOGO_UBEREATS },
+  foodpanda:  { kind:'logo', color:'var(--fp-base)', svg:LOGO_FOODPANDA },
 };
 
 /* 外送類通道（自送＋外送平台）—— 卡片一律顯示預約／預計取餐時間 */
@@ -1861,7 +1901,7 @@ function renderSettingsModal() {
 
       // PRD 設定項清單與順序：版面密度 → 品項字體大小 → 訂單排序 →
       // 訂單資訊顯示 → 合併相同品項 → 通知提示 → 啟用商店 → 軟體更新。
-      // 語言、主題、顯示已完成品項不在清單內，已移除（demo 可用 ?lang=en / ?theme=dark）。
+      // 顏色模式（淺色／深色）放在設定內（點確認才套用）；語言、顯示已完成品項不在清單內（demo 可用 ?lang=en）。
       field(t(lang, 'densityLabel'), segControl(
         [{ value:4, label:'1×4' }, { value:5, label:'1×5' }, { value:6, label:'1×6' }],
         s.density, v => setSetting('density', v))),
@@ -1885,6 +1925,11 @@ function renderSettingsModal() {
 
       row(t(lang, 'notifyNewOrder'),
         toggleSwitch(!!s.notify, v => setSetting('notify', v))),
+
+      field(t(lang, 'themeLabel'), segControl(
+        [{ value:'light', label:t(lang, 'themeLight') },
+         { value:'dark',  label:t(lang, 'themeDark') }],
+        s.theme, v => setSetting('theme', v))),
 
       // PRD 另有「啟用商店」「軟體更新」兩項，顯示規格待與 PM 確認後再加回
 
