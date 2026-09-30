@@ -304,7 +304,15 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .card-meta .m-sched > .icon{flex-shrink:0;}
 .card-meta .m-sched > .mq{flex:0 1 auto;}
 .card-meta .m-time{flex-shrink:0;}
-.card-items{flex:1 0 0;padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}
+.card-items-wrap{flex:1 0 0;min-height:0;position:relative;display:flex;flex-direction:column;}
+.card-items{flex:1 1 auto;min-height:0;padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}
+/* 內容被截斷時，清單底緣的「還有 N 項」：滿版白底 90% 不透明，浮在被截斷的品項上；
+   純文字、無箭頭、不吃點擊（點擊穿透到下方品項），避免被當成按鈕。 */
+.card-more{display:none;position:absolute;left:0;right:0;bottom:0;align-items:center;justify-content:center;padding:4px 0;line-height:1.2;
+  background:color-mix(in srgb, var(--surface) 90%, transparent);
+  color:var(--text-sub);font-size:20px;font-weight:400;pointer-events:none;user-select:none;}
+.card-items-wrap.has-more .card-more{display:flex;}
+.card-more.idle{visibility:hidden;}
 .card-foot{border-top:2px solid var(--border);border-bottom-left-radius:14px;border-bottom-right-radius:14px;
   padding:12px;display:flex;gap:10px;align-items:stretch;position:relative;}
 
@@ -1617,6 +1625,28 @@ function reprintItemLabel(order, item) {
   render();
 }
 
+// 「還有 N 項」：清單底緣以下、尚未完整露出的品項數；捲動或重繪後更新
+function updateCardMore(wrap) {
+  const list = wrap.querySelector('.card-items'), badge = wrap.querySelector('.card-more');
+  if (!list || !badge) return;
+  // 先以「無提示列」的高度判斷是否需要捲動；需要才保留提示列
+  wrap.classList.remove('has-more');
+  const overflow = list.scrollHeight > list.clientHeight + 1;
+  wrap.classList.toggle('has-more', overflow);
+  const bottom = list.getBoundingClientRect().bottom - 1;
+  let n = 0;
+  if (overflow) list.querySelectorAll('.item').forEach(el => { if (el.getBoundingClientRect().bottom > bottom + 1) n++; });
+  badge.classList.toggle('idle', n === 0);
+  if (n > 0) badge.firstChild.textContent = state.lang === 'zh' ? `還有 ${n} 項` : `${n} more`;
+}
+function bindCardMore() {
+  appRoot.querySelectorAll('.card-items-wrap').forEach(wrap => {
+    const list = wrap.querySelector('.card-items');
+    list.addEventListener('scroll', () => updateCardMore(wrap), { passive:true });
+    updateCardMore(wrap);
+  });
+}
+
 /* ── OrderItem (Figma 31:141) ── */
 function renderOrderItem(order, item, position, opts) {
   const done = !!item.done;
@@ -1749,13 +1779,15 @@ function renderOrderCard(order, opts) {
           : null)),
 
     /* Item list */
-    h('div', { class:'card-items' },
-      renderCustomerNote(order),
-      groups.map((g, gi) => {
-        if (g.length === 1) return renderOrderItem(order, g[0], 'single', itemOpts);
-        return h('div', { style:'display:flex;flex-direction:column' },
-          g.map((it, idx) => renderOrderItem(order, it, idx === 0 ? 'head' : 'tail', itemOpts)));
-      })),
+    h('div', { class:'card-items-wrap' },
+      h('div', { class:'card-items' },
+        renderCustomerNote(order),
+        groups.map((g, gi) => {
+          if (g.length === 1) return renderOrderItem(order, g[0], 'single', itemOpts);
+          return h('div', { style:'display:flex;flex-direction:column' },
+            g.map((it, idx) => renderOrderItem(order, it, idx === 0 ? 'head' : 'tail', itemOpts)));
+        })),
+      h('div', { class:'card-more', 'aria-live':'polite' }, h('span'))),
 
     /* Footer */
     h('div', { class:'card-foot' },
@@ -2128,6 +2160,8 @@ function render() {
     el.style.setProperty('--mq-shift', (-over - 2) + 'px');
     el.style.setProperty('--mq-dur', Math.max(1.2, over / MQ_SPEED).toFixed(1) + 's');
   });
+
+  bindCardMore();
 
   // Drop slide-in memory for cards that left the list
   const live = new Set(state.orders.concat(state.history).map(o => o.id));
