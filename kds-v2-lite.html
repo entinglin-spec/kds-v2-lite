@@ -32,6 +32,8 @@
   --svc-delivery:#9A82CE;    /* 外送 */
   --svc-ubereats:#06C167;    /* Uber Eats 品牌色 */
   --svc-foodpanda:#D70F64;   /* foodpanda 品牌色 */
+  /* 卡片標題列底色（Figma 204:4174）：依服務類型 */
+  --head-dinein:#FFE6C6; --head-takeout:#D2E7FF; --head-delivery:#EBE5F9; --head-ubereats:#D0F0E0; --head-foodpanda:#FFD4E6;
   /* Radius */
   --r-xs:4px; --r-md:8px; --r-xl:16px; --r-full:9999px;
   /* Shadow4 */
@@ -47,7 +49,7 @@ html[data-theme="light"]{
   --page:#F5F8F9;
   --surface:#FFFFFF;
   --surface-alt:#F4F4F5;
-  --border:#E4E4E7;
+  --border:#D4D4D8;
   --pressed:#E4E4E7;
   --text:#3F3F46;
   --text-sub:#71717A;
@@ -55,7 +57,7 @@ html[data-theme="light"]{
   --overlay:rgba(24,24,27,0.4);
   --error-strong:#D0342C;    /* 徽章／電量危險：error #FF8A80 壓暗至白底 AA */
   --warning-strong:#B26A00;  /* 電量偏低：warning #FFAB40 壓暗至白底 AA */
-  --meta-bg:#F5F8F9;
+  --meta-bg:#FFFFFF;
   --meta-ready-bg:#EAF2FB;
   --state-ready:#5292D9;
   --notif-unread-bg:#E1F2F0;   /* 設計稿：通知未讀卡片底色（外框與圓點用 brand-primary #58B6A8）*/
@@ -86,6 +88,11 @@ html[data-theme="dark"]{
   --error-strong:#FF8A80;    /* 深色模式改用亮紅，對 surface ≈ 7:1 */
   --warning-strong:#FFAB40;
   --meta-bg:#2A2F3B;
+  --head-dinein:color-mix(in srgb, var(--svc-dinein) 22%, var(--surface));
+  --head-takeout:color-mix(in srgb, var(--svc-takeout) 22%, var(--surface));
+  --head-delivery:color-mix(in srgb, var(--svc-delivery) 22%, var(--surface));
+  --head-ubereats:color-mix(in srgb, var(--svc-ubereats) 22%, var(--surface));
+  --head-foodpanda:color-mix(in srgb, var(--svc-foodpanda) 22%, var(--surface));
   --meta-ready-bg:#16304A;
   --state-ready:#5292D9;
   --notif-unread-bg:#16332F;   /* 深色模式對應色，維持與淺色相同的「淡品牌綠」語意 */
@@ -131,11 +138,11 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .v2-blink{animation:v2Blink 1s step-start infinite;}
 
 /* ═══ Layout ═══ */
-.app{background:var(--page);height:100vh;display:flex;flex-direction:column;color:var(--text);overflow:hidden;}
+.app{background:var(--page);height:100vh;display:flex;flex-direction:row;color:var(--text);overflow:hidden;}
 .topbar{height:100px;padding:20px;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:24px;flex-shrink:0;}
 .divider-v{width:1px;height:32px;background:var(--border);flex-shrink:0;}
-.body-row{display:flex;flex:1;overflow:hidden;}
-.siderail{width:80px;background:var(--surface);border-right:2px solid var(--border);padding:20px 0;display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.main-col{display:flex;flex-direction:column;flex:1;min-width:0;overflow:hidden;}   /* 側欄之外：分頁列 + 內容，側欄上下滿版 */
+.siderail{width:auto;background:var(--surface);border-right:2px solid var(--border);padding:20px;display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
 .toolbar{display:flex;flex-direction:column;gap:12px;align-items:center;}
 .content{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
 
@@ -183,11 +190,12 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 
 /* ═══ 原型模擬開關（非產品功能）═══
    有/無 CDS、前/後結 會改變 PRD 的流程與選單，用虛線框與產品 UI 區隔。 */
-.simbar{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;
+.simbar{position:relative;z-index:210;margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;
   border:1px dashed var(--g4);border-radius:var(--r-md);padding:8px 12px;}
 .simbar .sim-tag{font-size:14px;font-weight:700;color:var(--text-sub);letter-spacing:1px;flex-shrink:0;}
 .sim-group{display:flex;align-items:center;gap:8px;}
 .sim-group .sim-label{font-size:16px;font-weight:700;color:var(--text-sub);white-space:nowrap;}
+.sim-group.disabled{opacity:.4;pointer-events:none;}   /* 斷線時 CDS／結帳模擬不可操作 */
 .sim-group .seg{padding:3px;gap:3px;}
 .sim-group .seg button{font-size:16px;padding:5px 12px;white-space:nowrap;}
 
@@ -268,6 +276,11 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .card.ready{border-color:var(--state-ready);}   /* PRD §3.1 — 待取餐改色 */
 .card-head{border-bottom:2px solid var(--border);border-top-left-radius:14px;border-top-right-radius:14px;
   padding:12px;display:flex;flex-direction:column;gap:8px;}
+.card-head[data-type='dine-in']{background:var(--head-dinein);}
+.card-head[data-type='takeout']{background:var(--head-takeout);}
+.card-head[data-type='delivery']{background:var(--head-delivery);}
+.card-head[data-type='ubereats']{background:var(--head-ubereats);}
+.card-head[data-type='foodpanda']{background:var(--head-foodpanda);}
 .card-head-row{display:flex;align-items:center;gap:8px;width:100%;justify-content:space-between;}
 .card-title{display:flex;align-items:center;gap:8px;flex:1 0 0;min-width:0;}
 .card-num{color:var(--text);font-size:var(--num-size,28px);font-weight:700;
@@ -306,11 +319,11 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .card-meta .m-time{flex-shrink:0;}
 .card-items-wrap{flex:1 0 0;min-height:0;position:relative;display:flex;flex-direction:column;}
 .card-items{flex:1 1 auto;min-height:0;padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}
-/* 內容被截斷時，清單底緣的「還有 N 項」：滿版白底 90% 不透明，浮在被截斷的品項上；
-   純文字、無箭頭、不吃點擊（點擊穿透到下方品項），避免被當成按鈕。 */
-.card-more{display:none;position:absolute;left:0;right:0;bottom:0;align-items:center;justify-content:center;padding:4px 0;line-height:1.2;
-  background:color-mix(in srgb, var(--surface) 90%, transparent);
-  color:var(--text-sub);font-size:20px;font-weight:400;pointer-events:none;user-select:none;}
+/* 內容被截斷時，清單底緣的「還有 N 項，滑動查看」（Figma 204:4174）：黑 40% 滿版條、白字 20px；
+   純文字、不吃點擊（點擊穿透到下方品項）。 */
+.card-more{display:none;position:absolute;left:0;right:0;bottom:0;align-items:center;justify-content:center;
+  padding:4px 12px;background:rgba(0,0,0,.4);color:#fff;font-size:20px;font-weight:400;line-height:normal;
+  white-space:nowrap;pointer-events:none;user-select:none;}
 .card-items-wrap.has-more .card-more{display:flex;}
 .card-more.idle{visibility:hidden;}
 .card-foot{border-top:2px solid var(--border);border-bottom-left-radius:14px;border-bottom-right-radius:14px;
@@ -382,11 +395,14 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .menu.down{top:calc(100% + 8px);left:0;}
 .menu .btn{width:100%;}
 
-/* ═══ 斷線橫幅（位於分頁列下方、訂單區上方，佔版面高度）═══ */
-.net-banner{flex-shrink:0;height:56px;display:flex;align-items:center;justify-content:center;gap:12px;
-  background:var(--net-off-bg);color:#fff;font-size:24px;font-weight:700;animation:v2SlideIn .2s ease-out;}
-.net-spin.lottie{border:none;animation:none;border-radius:0;width:36px;height:36px;}
-.net-spin{width:22px;height:22px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;animation:netSpin .9s linear infinite;flex-shrink:0;}
+/* ═══ 斷線遮罩（Figma 269:19645）：全螢幕黑 60% 遮罩，置中「等待網路連接...」＋ loading；遮罩會擋住所有操作 ═══ */
+.net-banner{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;gap:12px;
+  background:rgba(0,0,0,.6);color:#fff;font-size:36px;font-weight:700;text-align:center;animation:v2FadeIn .2s ease-out;}
+@keyframes v2FadeIn{from{opacity:0}to{opacity:1}}
+.net-spin{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;animation:netSpin .9s linear infinite;flex-shrink:0;}
+.net-spin.lottie{border:none;border-radius:0;animation:none;}
+.net-spin.lottie svg{display:block;width:100%;height:100%;}
+.net-banner > span{display:flex;align-items:center;line-height:1;}   /* 文字與動畫同為 flex 置中，上下對齊 */   /* 已載入 lottie：移除 CSS 備援轉圈，只留 json 動畫 */
 @keyframes netSpin{to{transform:rotate(360deg)}}
 
 /* ═══ Toast ═══ */
@@ -1455,7 +1471,7 @@ function renderSimBar() {
   const lang = state.lang;
   return h('div', { class:'simbar' },
     h('span', { class:'sim-tag', text:t(lang, 'simTag') }),
-    h('div', { class:'sim-group' },
+    h('div', { class:'sim-group' + (NET_ONLINE ? '' : ' disabled') },
       h('span', { class:'sim-label', text:t(lang, 'simCds') }),
       segControl(
         [{ value:true,  label:t(lang, 'simOn') },
@@ -1467,7 +1483,7 @@ function renderSimBar() {
         [{ value:true,  label:t(lang, 'simNetOn') },
          { value:false, label:t(lang, 'simNetOff') }],
         NET_ONLINE, setNet)),
-    SHOW_POSTPAY_SIM ? h('div', { class:'sim-group' },
+    SHOW_POSTPAY_SIM ? h('div', { class:'sim-group' + (NET_ONLINE ? '' : ' disabled') },
       h('span', { class:'sim-label', text:t(lang, 'simCheckout') }),
       segControl(
         [{ value:false, label:t(lang, 'simPrepay') },
@@ -1637,7 +1653,7 @@ function updateCardMore(wrap) {
   let n = 0;
   if (overflow) list.querySelectorAll('.item').forEach(el => { if (el.getBoundingClientRect().bottom > bottom + 1) n++; });
   badge.classList.toggle('idle', n === 0);
-  if (n > 0) badge.firstChild.textContent = state.lang === 'zh' ? `還有 ${n} 項` : `${n} more`;
+  if (n > 0) badge.firstChild.textContent = state.lang === 'zh' ? `還有 ${n} 項，滑動查看` : `${n} more, scroll to view`;
 }
 function bindCardMore() {
   appRoot.querySelectorAll('.card-items-wrap').forEach(wrap => {
@@ -1737,7 +1753,9 @@ function renderOrderCard(order, opts) {
   const s = state.settings;
   // 右上角錢錢 icon 代表「已付款」——
   // 後結內用單在廚房出餐時還沒結帳，因此一律不顯示（前結內用、外帶、外送仍依付款狀態）
-  const paid = order.paid !== false && !(POSTPAY_DINEIN && order.type === 'dine-in');
+  // 外帶／外送（自送、Uber Eats、foodpanda）一律視為已付款，恆顯示標示
+  const alwaysPaid = order.type === 'takeout' || DELIVERY_TYPES.includes(order.type);
+  const paid = alwaysPaid || (order.paid !== false && !(POSTPAY_DINEIN && order.type === 'dine-in'));
   const closed = !!order.completedAt;          // 已消單
   const ready = !!order.called && !closed;     // 待取餐（已消單就不再套用待取餐配色）
   const inSearch = !!opts.search;
@@ -1754,7 +1772,7 @@ function renderOrderCard(order, opts) {
       'data-oid':order.id,
     },
     /* Header */
-    h('div', { class:'card-head' },
+    h('div', { class:'card-head', 'data-type':order.type },
       h('div', { class:'card-head-row' },
         h('div', { class:'card-title' },
           renderChannelTag(order.type),
@@ -2098,18 +2116,18 @@ function renderSearchResult() {
 
 function renderApp() {
   return h('div', { class:'app' },
-    renderTopBar(),
-    h('div', { class:'body-row' },
-      renderSideRail(),
+    renderSideRail(),
+    h('div', { class:'main-col' },
+      renderTopBar(),
       h('div', { class:'content' },
-        renderNetBanner(),
         renderGrid(),
         renderPager())),
     renderSearchDialog(),
     renderNotifyDialog(),
     renderReprintDialog(),
     renderRefundDialog(),
-    renderSettingsModal());
+    renderSettingsModal(),
+    renderNetBanner());
 }
 
 /* ═══════════════════════════════════════════════════════════════
