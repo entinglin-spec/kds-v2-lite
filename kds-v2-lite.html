@@ -103,7 +103,7 @@ html[data-theme="light"]{
   --switch-knob-shadow:rgba(0,0,0,.25);
   --cta-info-bg:var(--info-base);          /* 「已取餐」按鈕 */
   --cta-info-pressed:var(--info-shade);
-  --more-bar-bg:rgba(0,0,0,.4);            /* 「還有 N 項」條：Black 40%（設計稿） */
+  --more-bar-bg:rgba(0,0,0,.5);            /* 「滑動看 N 項」膠囊：Black 50% */
   --more-bar-fg:var(--white);
   --on-overlay:var(--white);
   /* CTA、其他 */
@@ -410,6 +410,8 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .note-body{flex:1 0 0;min-width:0;color:var(--text);font-size:20px;font-weight:400;line-height:1.3;}
 .note-body .note-line-memo{font-weight:700;}   /* 備註會改變出餐內容，粗體與客人資料區隔 */
 .note-toggle{background:transparent;border:none;padding:0;cursor:pointer;color:var(--text);display:inline-flex;flex-shrink:0;}
+.note.collapsible{cursor:pointer;user-select:none;}
+.note.collapsible:active{background:var(--surface-alt);}
 
 /* ═══ OrderItem (Figma 31:141) ═══ */
 .item-wrap{position:relative;}
@@ -1618,17 +1620,20 @@ function renderCustomerNote(order) {
   const open = !state.noteCollapsed[order.id];       // default: expanded
   const visible = collapsible && !open ? lines.slice(0, 2) : lines;
 
-  return h('div', { class:'note' },
+  // 可收合時整張備註卡都是點擊範圍（不只右側箭頭），手濕或戴手套也好按
+  const toggle = () => { state.noteCollapsed[order.id] = open; render(); };
+  return h('div', collapsible
+      ? { class:'note collapsible', role:'button', tabindex:'0', 'aria-expanded':String(open), onclick:toggle,
+          onkeydown:(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } } }
+      : { class:'note' },
     h('div', { class:'note-body' },
       visible.map((line, i) => {
         const truncated = collapsible && !open && i === visible.length - 1;
         return h('div', { class: line.key === 'note' ? 'note-line-memo' : null,
           text: line.label + '：' + line.value + (truncated ? '...' : '') });
       })),
-    collapsible ? h('button', {
-      class:'note-toggle', 'aria-label':'toggle', 'aria-expanded':String(open),
-      onclick:() => { state.noteCollapsed[order.id] = open; render(); },
-    }, icon(open ? 'chevronUp' : 'chevronDown', 24)) : null);
+    collapsible ? h('span', { class:'note-toggle', 'aria-hidden':'true' },
+      icon(open ? 'chevronUp' : 'chevronDown', 24)) : null);
 }
 
 /* ── 點擊判定（PRD §3.5 #5）────────────────────────────────
