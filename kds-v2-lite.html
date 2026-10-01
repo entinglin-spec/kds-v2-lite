@@ -386,11 +386,13 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .card-meta .m-time{flex-shrink:0;}
 .card-items-wrap{flex:1 0 0;min-height:0;position:relative;display:flex;flex-direction:column;}
 .card-items{flex:1 1 auto;min-height:0;padding:12px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}
-/* 內容被截斷時，清單底緣的「還有 N 項，滑動查看」（Figma 204:4174）：黑 40% 滿版條、白字 20px；
-   純文字、不吃點擊（點擊穿透到下方品項）。 */
-.card-more{display:none;position:absolute;left:0;right:0;bottom:0;align-items:center;justify-content:center;
-  padding:4px 12px;background:var(--more-bar-bg);color:var(--more-bar-fg);font-size:20px;font-weight:400;line-height:normal;
-  white-space:nowrap;pointer-events:none;user-select:none;}
+/* 內容被截斷時，清單底緣與品項同寬的膠囊「滑動看 N 項」：純提示、不吃點擊（點擊穿透到品項）。
+   用「滑動」而非可點的樣子，避免被當成按鈕。 */
+.card-more{display:none;position:absolute;left:12px;right:12px;bottom:8px;align-items:center;justify-content:center;
+  pointer-events:none;user-select:none;}
+.card-more-btn{display:flex;align-items:center;justify-content:center;width:100%;
+  padding:4px 12px;border-radius:var(--r-full);background:var(--more-bar-bg);color:var(--more-bar-fg);
+  font-size:20px;font-weight:400;line-height:normal;white-space:nowrap;}
 .card-items-wrap.has-more .card-more{display:flex;}
 .card-more.idle{visibility:hidden;}
 .card-foot{border-top:2px solid var(--border);border-bottom-left-radius:14px;border-bottom-right-radius:14px;
@@ -1714,6 +1716,7 @@ function reprintItemLabel(order, item) {
 // 「還有 N 項」：清單底緣以下、尚未完整露出的品項數；捲動或重繪後更新
 function updateCardMore(wrap) {
   const list = wrap.querySelector('.card-items'), badge = wrap.querySelector('.card-more');
+  const label = badge && badge.querySelector('.card-more-btn > span:last-child');
   if (!list || !badge) return;
   // 先以「無提示列」的高度判斷是否需要捲動；需要才保留提示列
   wrap.classList.remove('has-more');
@@ -1723,7 +1726,7 @@ function updateCardMore(wrap) {
   let n = 0;
   if (overflow) list.querySelectorAll('.item').forEach(el => { if (el.getBoundingClientRect().bottom > bottom + 1) n++; });
   badge.classList.toggle('idle', n === 0);
-  if (n > 0) badge.firstChild.textContent = state.lang === 'zh' ? `還有 ${n} 項，滑動查看` : `${n} more, scroll to view`;
+  if (n > 0 && label) label.textContent = state.lang === 'zh' ? `滑動看 ${n} 項` : `Scroll · ${n} more`;
 }
 function bindCardMore() {
   appRoot.querySelectorAll('.card-items-wrap').forEach(wrap => {
@@ -1874,7 +1877,8 @@ function renderOrderCard(order, opts) {
           return h('div', { style:'display:flex;flex-direction:column' },
             g.map((it, idx) => renderOrderItem(order, it, idx === 0 ? 'head' : 'tail', itemOpts)));
         })),
-      h('div', { class:'card-more', 'aria-live':'polite' }, h('span'))),
+      h('div', { class:'card-more', 'aria-live':'polite' },
+        h('span', { class:'card-more-btn' }, h('span')))),
 
     /* Footer */
     h('div', { class:'card-foot' },
