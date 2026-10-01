@@ -180,8 +180,8 @@ html[data-theme="dark"]{
   --brand-solid:var(--primary-shade);     /* 深色：白字對比 3.9:1（Base 只有 2.4:1） */
   --cta-brand-bg:var(--brand-solid);
   --cta-brand-pressed:var(--primary-base);  /* 沒有比 Shade 更深的品牌階，按下改為提亮一階 */
-  --toast-bg:var(--gray-7);
-  --toast-fg:var(--white);
+  --toast-bg:var(--gray-2);        /* 深色：反白（Gray 2 底、Gray 10 字），在深色卡片上才醒目 */
+  --toast-fg:var(--gray-10);
   --overlay:rgba(9,9,11,.8);       /* Gray 10 × 80% */
   --menu-shadow:0px 16px 40px rgba(9,9,11,0.6), 0px 0px 1px rgba(255,255,255,0.08);
 }
@@ -321,8 +321,6 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .result-num{font-size:24px;font-weight:700;color:var(--text);flex:1 0 0;min-width:0;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .result-state{font-size:20px;color:var(--text-meta);white-space:nowrap;flex-shrink:0;}
-.tag-done{background:var(--surface-alt);color:var(--text-sub);font-size:20px;
-  font-weight:700;padding:4px 8px;border-radius:var(--r-md);white-space:nowrap;}
 
 /* ═══ Grid ═══ */
 /* 設計稿：訂單區外距與卡片間距依版面密度 1×4 20px / 1×5 16px / 1×6 12px */
@@ -1854,8 +1852,6 @@ function renderOrderCard(order, opts) {
             ? h('span', { class:'card-table', text:order.tableNumber + (state.lang === 'zh' ? '桌' : '') })
             : null),
         h('div', { class:'badges' },
-          // PRD §2.3.1 — 已消單的訂單於卡片上加狀態標示（已完成／已退單）
-          (inSearch && closed) ? h('span', { class:'tag-done', text:t(state.lang, orderStateKey(order)) }) : null,
           paid ? h('span', { class:'paid-icon', title:t(state.lang, 'paid') }, icon('circleDollarSign', 32)) : null)),
       // PRD §2.2 — 進單時間 HH:MM 恆顯示；預約單一併顯示預約取餐日期／時間
       h('div', { class:'card-meta' },
