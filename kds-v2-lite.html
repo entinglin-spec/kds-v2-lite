@@ -368,14 +368,14 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 @media (prefers-reduced-motion:reduce){
   .mq.marquee > .mq-track{animation:none;transform:translateX(var(--mq-shift,0));}
 }
-/* 桌號在資訊列：桌號與進單時間不被擠壓，預約時間先縮字、再捲動 */
+/* 桌號在資訊列：與進單時間同行放不下就換到下一行，不壓縮 */
 .card-table{color:var(--text);font-size:20px;font-weight:400;white-space:nowrap;
-  flex:0 0 auto;max-width:60%;overflow:hidden;text-overflow:ellipsis;}   /* 桌號不縮；預約時間用既有縮字／捲動讓位 */
+  flex:0 0 auto;max-width:100%;overflow:hidden;text-overflow:ellipsis;}   /* 桌號不縮；預約時間用既有縮字／捲動讓位 */
 .badges{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .paid-icon{color:var(--icon-paid);display:inline-flex;align-items:center;justify-content:center;}
 /* 卡片資訊列：進單時間（左）＋ 預約取餐時間（右，預約單才有）*/
 .card-meta{background:var(--meta-bg);border-radius:var(--r-md);padding:4px 12px;
-  display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;}
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 8px;width:100%;}   /* 同一行放不下時換行成上下兩行（進單時間在上） */
 .card-meta .m-time{display:inline-flex;align-items:center;gap:4px;color:var(--text);
   font-size:20px;font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .card-meta .m-sched{display:inline-flex;align-items:center;gap:4px;color:var(--text);
