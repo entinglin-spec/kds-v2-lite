@@ -368,9 +368,9 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 @media (prefers-reduced-motion:reduce){
   .mq.marquee > .mq-track{animation:none;transform:translateX(var(--mq-shift,0));}
 }
-/* 空間不足時桌號先讓位，訂單編號（恆顯示）最後才截斷 */
-.card-table{color:var(--text-meta);font-size:20px;font-weight:400;white-space:nowrap;
-  flex:0 500 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+/* 桌號在資訊列：桌號與進單時間不被擠壓，預約時間先縮字、再捲動 */
+.card-table{color:var(--text);font-size:20px;font-weight:400;white-space:nowrap;
+  flex:0 0 auto;max-width:60%;overflow:hidden;text-overflow:ellipsis;}   /* 桌號不縮；預約時間用既有縮字／捲動讓位 */
 .badges{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .paid-icon{color:var(--icon-paid);display:inline-flex;align-items:center;justify-content:center;}
 /* 卡片資訊列：進單時間（左）＋ 預約取餐時間（右，預約單才有）*/
@@ -723,7 +723,7 @@ function mkOrders() {
       ]},
     // 預約訂單（PRD §2.2 / §5.4）—— 已依 Portal 設定提前進單，卡片顯示預約取餐時間
     { id:'ord-006', tableNumber:'R01', orderNumber:'#0050', type:'dine-in', source:'pos',
-      startTime: now - 2 * MIN, scheduledTime: now + 55 * MIN, paid:true,
+      startTime: now - 2 * MIN, paid:true,
       customer:{ name:'王大明', phone:'0912-111-222' },
       orderNotes:'生日包廂，請備蠟燭', items:[
         { id:'r1', name:'牛肉麵', qty:2, notes:'不加辣' },
@@ -1847,15 +1847,16 @@ function renderOrderCard(order, opts) {
         h('div', { class:'card-title' },
           renderChannelTag(order.type),
           h('span', { class:'card-num mq' },
-            h('span', { class:'mq-track', text:order.orderNumber })),
-          order.type === 'dine-in' && order.tableNumber
-            ? h('span', { class:'card-table', text:order.tableNumber + (state.lang === 'zh' ? '桌' : '') })
-            : null),
+            h('span', { class:'mq-track', text:order.orderNumber }))),
         h('div', { class:'badges' },
           paid ? h('span', { class:'paid-icon', title:t(state.lang, 'paid') }, icon('circleDollarSign', 32)) : null)),
       // PRD §2.2 — 進單時間 HH:MM 恆顯示；預約單一併顯示預約取餐日期／時間
       h('div', { class:'card-meta' },
         h('span', { class:'m-time' }, icon('clock', 20), fmtClock(order.startTime)),
+        // 桌號放資訊列（標題列在 1×6 太擠）。內用單不會有預約時間，兩者不會同時出現
+        order.type === 'dine-in' && order.tableNumber
+          ? h('span', { class:'card-table', title:order.tableNumber, text:order.tableNumber + (state.lang === 'zh' ? '桌' : '') })
+          : null,
         order.scheduledTime
           // 設計稿：日曆 icon 已表達「預約」，不再重複顯示文字標籤
           ? h('span', { class:'m-sched', title:t(state.lang, 'scheduled') },
