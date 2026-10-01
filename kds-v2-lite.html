@@ -2230,10 +2230,10 @@ function render() {
   appRoot.appendChild(renderApp());
 
   // 內容放不下時的處理（PRD §2.2「顯示長度上限與截斷規則」未給值）：
-  //   1. 先沿既有字級級距（32/24/20/16）往下縮，縮得下就完全不動
+  //   1. 先縮字級（訂單編號 28→16px 連續縮放；預約時間 20/16），縮得下就完全不動
   //   2. 縮到最小仍放不下，才捲一次露出結尾並停住
   const MQ_SPEED = 50;                 // px / 秒
-  const STEPS_NUM = [28, 24, 20, 16];  // 訂單編號可用字級（設計稿基準 28px）
+  const MIN_NUM = 16;                 // 訂單編號最小字級（設計稿基準 28px，其間連續縮放）
   const STEPS_SUB = [20, 16];          // 預約時間等次要資訊
 
   appRoot.querySelectorAll('.mq').forEach(el => {
@@ -2242,12 +2242,19 @@ function render() {
     if (track.offsetWidth - el.clientWidth <= 1) return;   // 放得下，什麼都不做
 
     // 1. 縮字級
-    const steps = el.classList.contains('card-num') ? STEPS_NUM : STEPS_SUB;
+    const isNum = el.classList.contains('card-num');
     const curPx = parseFloat(getComputedStyle(el).fontSize);
     const target = curPx * (el.clientWidth / track.offsetWidth);
-    const fits = steps.filter(v => v <= target);
-    const chosen = fits.length ? Math.max(...fits) : Math.min(...steps);
-    if (chosen < curPx) el.style.fontSize = chosen + 'px';
+    if (isNum) {
+      // 訂單編號：在 16–28px 之間取放得下的最大整數字級，不留空位（級距太粗會留空）
+      let px = Math.min(curPx, Math.max(MIN_NUM, Math.floor(target)));
+      el.style.fontSize = px + 'px';
+      while (px > MIN_NUM && track.offsetWidth - el.clientWidth > 1) { px -= 1; el.style.fontSize = px + 'px'; }
+    } else {
+      const fits = STEPS_SUB.filter(v => v <= target);
+      const chosen = fits.length ? Math.max(...fits) : Math.min(...STEPS_SUB);
+      if (chosen < curPx) el.style.fontSize = chosen + 'px';
+    }
 
     // 2. 還是放不下才捲一次
     const over = track.offsetWidth - el.clientWidth;
