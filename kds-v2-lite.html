@@ -215,10 +215,10 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 
 /* ═══ Layout ═══ */
 .app{background:var(--page);height:100vh;display:flex;flex-direction:row;color:var(--text);overflow:hidden;}
-.topbar{height:100px;padding:20px;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:24px;flex-shrink:0;}
+.topbar{height:86px;padding:12px;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:24px;flex-shrink:0;}
 .divider-v{width:1px;height:32px;background:var(--border);flex-shrink:0;}
 .main-col{display:flex;flex-direction:column;flex:1;min-width:0;overflow:hidden;}   /* 側欄之外：分頁列 + 內容，側欄上下滿版 */
-.siderail{width:auto;background:var(--surface);border-right:2px solid var(--border);padding:20px;display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.siderail{width:auto;background:var(--surface);border-right:2px solid var(--border);padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px;flex-shrink:0;overflow-y:auto;}
 .toolbar{display:flex;flex-direction:column;gap:12px;align-items:center;}
 .content{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
 
@@ -249,12 +249,16 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .battery.crit{color:var(--error-strong);}
 
 /* ═══ ChannelTabs ═══ */
-.tabs{display:flex;gap:12px;align-items:center;}
+.tabs{display:flex;gap:12px;align-items:center;min-width:0;overflow-x:auto;scrollbar-width:none;}   /* 空間不足時分頁鈕自己橫向捲動，模擬開關固定在右側不被擠掉 */
+.tabs::-webkit-scrollbar{display:none;}
 .tab{background:var(--ctrl-bg);color:var(--text);border:2px solid var(--ctrl-border);border-radius:var(--r-md);
   height:60px;padding:12px 20px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;
   user-select:none;transition:background .08s linear;flex-shrink:0;white-space:nowrap;}
 .tab:active{background:var(--ctrl-pressed);}
 .tab.active{background:var(--brand-solid);color:var(--on-solid);border-color:transparent;font-weight:700;}
+.tab .channel-tile{width:24px;height:24px;border-radius:6px;}
+.tab .channel-tile.logo-tile{padding:2px 3px;}
+.tab .channel-tile.logo-tile svg{width:100%;height:100%;}
 .tab .t-label{font-size:24px;font-weight:inherit;}
 .tab .t-count{font-size:20px;font-weight:inherit;}
 
@@ -328,10 +332,9 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   grid-template-columns:repeat(var(--cols,4),minmax(0,1fr));grid-template-rows:minmax(0,1fr);}
 .empty{margin:auto;color:var(--text-sub);font-size:24px;font-weight:400;grid-column:1 / -1;}
 
-/* 翻頁列（PRD §2.1 — 超出一屏以按鈕翻頁，不做橫向捲動）*/
-.pager{flex-shrink:0;background:var(--surface);border-top:2px solid var(--border);
-  padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:20px;}
-.pager .page-num{font-size:24px;font-weight:700;color:var(--text);min-width:80px;text-align:center;
+/* 翻頁（PRD §2.1）— 位於左側欄，電量上方；上＝上一頁、下＝下一頁 */
+.pager{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.pager .page-num{font-size:20px;font-weight:700;color:var(--text);text-align:center;white-space:nowrap;
   font-variant-numeric:tabular-nums;}
 /* 翻頁箭頭＝按了就執行的動作，用實心灰（同 .btn.gray）；與左側常駐工具列的外框線樣式區隔 */
 .pager .iconbtn{background:var(--dropdown-item-bg);border-color:var(--dropdown-item-border);}
@@ -1512,7 +1515,7 @@ function renderSideRail() {
       iconButton('cornerUpLeft', t(state.lang, 'undoTitle'), handleUndo),
       iconButton('refresh', t(state.lang, 'refreshTitle'), handleRefresh),
       iconButton('settings', t(state.lang, 'settingsTitle'), openSettings)),
-    h('div', { class:'rail-bottom' }, renderBattery()));
+    h('div', { class:'rail-bottom' }, renderPager(), renderBattery()));
 }
 
 /* ── ChannelTabs ── */
@@ -1531,6 +1534,9 @@ function renderChannelTabs() {
         class:'tab' + (state.channel === tab.key ? ' active' : ''),
         onclick:() => { state.channel = tab.key; state.page = 0; render(); },
       },
+      tab.key === 'dine-in' || tab.key === 'takeout' || tab.key === 'delivery'
+        ? icon(CHANNEL_TILE[tab.key].icon, 24)
+        : (tab.key !== 'all' ? renderChannelTag(tab.key, 16) : null),
       h('span', { class:'t-label', text:t(state.lang, tab.labelKey) }),
       h('span', { class:'t-count', text:'(' + (counts[tab.key] || 0) + ')' }))));
 }
@@ -1571,14 +1577,14 @@ function renderTopBar() {
 }
 
 /* ── ChannelTag (Figma 7:1331 / 32:284 / 49:1125) ── */
-function renderChannelTag(type) {
+function renderChannelTag(type, size) {
   const meta = CHANNEL_TILE[type] || CHANNEL_TILE['dine-in'];
   if (meta.kind === 'logo') {
     const el = h('div', { class:'channel-tile logo-tile', style:'background:' + meta.color });
     el.innerHTML = meta.svg;
     return el;
   }
-  return h('div', { class:'channel-tile icon-tile', style:'--svc:' + meta.color }, icon(meta.icon, 28));
+  return h('div', { class:'channel-tile icon-tile', style:'--svc:' + meta.color }, icon(meta.icon, size || 28));
 }
 
 /* ── Checkbox (Figma 56:1531) ── */
@@ -2086,10 +2092,10 @@ function renderPager() {
   const go = (d) => { state.page = Math.min(pages - 1, Math.max(0, state.page + d)); render(); };
   return h('div', { class:'pager' },
     h('button', { class:'iconbtn', title:t(state.lang, 'prevPage'),
-      disabled: state.page === 0, onclick:() => go(-1) }, icon('chevronLeft', 36)),
+      disabled: state.page === 0, onclick:() => go(-1) }, icon('chevronUp', 36)),
     h('span', { class:'page-num', text:(state.page + 1) + ' / ' + pages }),
     h('button', { class:'iconbtn', title:t(state.lang, 'nextPage'),
-      disabled: state.page >= pages - 1, onclick:() => go(1) }, icon('chevronRight', 36)));
+      disabled: state.page >= pages - 1, onclick:() => go(1) }, icon('chevronDown', 36)));
 }
 
 /* ── 搜尋訂單 Dialog（PRD §2.3.1）────────────────────────────
@@ -2203,8 +2209,7 @@ function renderApp() {
     h('div', { class:'main-col' },
       renderTopBar(),
       h('div', { class:'content' },
-        renderGrid(),
-        renderPager())),
+        renderGrid())),
     renderSearchDialog(),
     renderNotifyDialog(),
     renderReprintDialog(),
