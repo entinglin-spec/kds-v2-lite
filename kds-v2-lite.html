@@ -235,8 +235,9 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .iconbtn .icon{width:36px;height:36px;}
 .iconbtn{position:relative;}
 /* 電量狀態（PRD §2.3 — 低於 20% / 10% 需提示）*/
-.rail-bottom{margin-top:auto;display:flex;flex-direction:column;gap:12px;align-items:center;}
-.battery{width:60px;padding:6px 0 4px;border-radius:var(--r-md);display:flex;flex-direction:column;align-items:center;gap:2px;
+.rail-sep{height:2px;background:var(--border);align-self:stretch;margin:0 -12px;flex-shrink:0;}   /* 電量是狀態顯示，與上方可操作的按鈕隔開；滿版寬（抵銷側欄 12px 內距）*/
+.rail-bottom{margin-top:auto;display:flex;flex-direction:column;gap:12px;align-items:center;align-self:stretch;}
+.battery{width:60px;height:60px;padding:0;justify-content:center;border-radius:var(--r-md);display:flex;flex-direction:column;align-items:center;gap:2px;
   color:var(--text);user-select:none;   /* 與側欄 icon 同色 */
   /* 原型模擬用：點擊切換電量斷點。正式版是純狀態顯示，不可點 */
   border:none;background:transparent;font-family:inherit;cursor:pointer;}
@@ -1515,7 +1516,7 @@ function renderSideRail() {
       iconButton('cornerUpLeft', t(state.lang, 'undoTitle'), handleUndo),
       iconButton('refresh', t(state.lang, 'refreshTitle'), handleRefresh),
       iconButton('settings', t(state.lang, 'settingsTitle'), openSettings)),
-    h('div', { class:'rail-bottom' }, renderPager(), renderBattery()));
+    h('div', { class:'rail-bottom' }, renderPager(), h('div', { class:'rail-sep' }), renderBattery()));
 }
 
 /* ── ChannelTabs ── */
