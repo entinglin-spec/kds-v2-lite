@@ -204,7 +204,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 /* ═══ Animations (v2.css) ═══ */
 @keyframes v2FadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.94)}}
 @keyframes v2SlideIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
-@keyframes v2ToastIn{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes v2ToastIn{0%{opacity:0;transform:translateY(-20px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes v2DropdownIn{0%{opacity:0;transform:translateY(-8px) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes v2Blink{0%,49%{opacity:1}50%,100%{opacity:.15}}
 .v2-fade-out{animation:v2FadeOut .35s ease-out forwards;}
@@ -396,9 +396,19 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   pointer-events:none;user-select:none;}
 .card-more-btn{display:flex;align-items:center;justify-content:center;width:100%;
   padding:4px 12px;border-radius:var(--r-full);background:var(--more-bar-bg);color:var(--more-bar-fg);
-  font-size:20px;font-weight:400;line-height:normal;white-space:nowrap;}
-.card-items-wrap.has-more .card-more{display:flex;}
+  font-size:20px;font-weight:400;line-height:normal;white-space:nowrap;gap:4px;}
+.card-items-wrap.has-more .card-more:not(.top){display:flex;}
 .card-more.idle{visibility:hidden;}
+/* 上緣提示：捲離頂端時顯示「上方 N 項」，樣式與底部膠囊對稱 */
+.card-more.top{bottom:auto;top:8px;z-index:2;}
+.card-items-wrap.has-above .card-more.top{display:flex;}
+/* 邊緣漸層：被切掉的那一側淡出，提示該方向還有品項 */
+.card-items-wrap::before,.card-items-wrap::after{content:'';position:absolute;left:0;right:0;height:32px;z-index:1;
+  pointer-events:none;opacity:0;transition:opacity .12s linear;}
+.card-items-wrap::before{top:0;background:linear-gradient(to bottom,var(--surface),transparent);}
+.card-items-wrap::after{bottom:0;background:linear-gradient(to top,var(--surface),transparent);}
+.card-items-wrap.fade-top::before,.card-items-wrap.fade-bottom::after{opacity:1;}
+.card-more{z-index:2;}
 .card-foot{border-top:2px solid var(--border);border-bottom-left-radius:14px;border-bottom-right-radius:14px;
   padding:12px;display:flex;gap:10px;align-items:stretch;position:relative;}
 
@@ -481,7 +491,7 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 @keyframes netSpin{to{transform:rotate(360deg)}}
 
 /* ═══ Toast ═══ */
-.toast-layer{position:fixed;right:24px;bottom:24px;display:flex;flex-direction:column;align-items:flex-end;gap:12px;z-index:100;}
+.toast-layer{position:fixed;right:24px;top:24px;display:flex;flex-direction:column;align-items:flex-end;gap:12px;z-index:100;}
 .toast{background:var(--toast-bg);color:var(--toast-fg);padding:14px 20px;border-radius:var(--r-md);
   box-shadow:var(--shadow4);font-size:20px;font-weight:700;text-align:center;width:fit-content;max-width:calc(100vw - 48px);}
 
@@ -569,7 +579,7 @@ const STR = {
     reprintTitle:'補印', reprintKitchen:'廚房明細', reprintSticker:'標籤貼紙',
     confirm:'確認', cancel:'取消', itemMemo:'備註',
     toastServed:'已出餐', toastServedCalled:'已出餐並叫號',
-    toastUndone:'已復原上一步', toastNoUndo:'沒有可復原的動作', toastRefreshed:'已重新整理',
+    toastUndone:'已復原上一步', toastNoUndo:'沒有可復原的動作', toastRefreshed:'已重新整理', toastItemDone:'已完成',
     settingsTitle:'設定', fontScale:'品項文字大小', close:'關閉',
     noOrders:'暫無訂單',
     searchTitle:'搜尋訂單', searchHint:'輸入訂單編號或電話號碼',
@@ -610,7 +620,7 @@ const STR = {
     reprintTitle:'Reprint', reprintKitchen:'Kitchen details', reprintSticker:'Label sticker',
     confirm:'Confirm', cancel:'Cancel', itemMemo:'Note',
     toastServed:'Served', toastServedCalled:'Served & called',
-    toastUndone:'Undone', toastNoUndo:'Nothing to undo', toastRefreshed:'Refreshed',
+    toastUndone:'Undone', toastNoUndo:'Nothing to undo', toastRefreshed:'Refreshed', toastItemDone:'done',
     settingsTitle:'Settings', fontScale:'Item text size', close:'Close',
     noOrders:'No orders',
     searchTitle:'Search Order', searchHint:'Enter order number or phone',
@@ -1270,6 +1280,7 @@ function handleItemDone(orderId, ids) {
   itemLock[key] = now;
   pushUndo();
   targets.forEach(i => { i.done = true; });
+  pushToast(`${targets[0].name} x${targets.length} ${t(state.lang, 'toastItemDone')}`);
   render();
 }
 
@@ -1727,7 +1738,7 @@ function reprintItemLabel(order, item) {
 
 // 「還有 N 項」：清單底緣以下、尚未完整露出的品項數；捲動或重繪後更新
 function updateCardMore(wrap) {
-  const list = wrap.querySelector('.card-items'), badge = wrap.querySelector('.card-more');
+  const list = wrap.querySelector('.card-items'), badge = wrap.querySelector('.card-more:not(.top)');
   const label = badge && badge.querySelector('.card-more-btn > span:last-child');
   if (!list || !badge) return;
   // 先以「無提示列」的高度判斷是否需要捲動；需要才保留提示列
@@ -1739,6 +1750,17 @@ function updateCardMore(wrap) {
   if (overflow) list.querySelectorAll('.item').forEach(el => { if (el.getBoundingClientRect().bottom > bottom + 1) n++; });
   badge.classList.toggle('idle', n === 0);
   if (n > 0 && label) label.textContent = state.lang === 'zh' ? `滑動看 ${n} 項` : `Scroll · ${n} more`;
+
+  // 上緣：已被捲出清單頂端（含只露出一部分）的品項數
+  const topEl = wrap.querySelector('.card-more.top');
+  const topLabel = topEl && topEl.querySelector('.card-more-btn > span:last-child');
+  const top = list.getBoundingClientRect().top + 1;
+  let a = 0;
+  if (overflow) list.querySelectorAll('.item').forEach(el => { if (el.getBoundingClientRect().top < top - 1) a++; });
+  wrap.classList.toggle('has-above', a > 0);
+  wrap.classList.toggle('fade-top', a > 0);
+  wrap.classList.toggle('fade-bottom', n > 0);
+  if (a > 0 && topLabel) topLabel.textContent = state.lang === 'zh' ? `滑動看 ${a} 項` : `Scroll · ${a} more`;
 }
 function bindCardMore() {
   appRoot.querySelectorAll('.card-items-wrap').forEach(wrap => {
@@ -1889,8 +1911,10 @@ function renderOrderCard(order, opts) {
           return h('div', { style:'display:flex;flex-direction:column' },
             g.map((it, idx) => renderOrderItem(order, it, idx === 0 ? 'head' : 'tail', itemOpts)));
         })),
+      h('div', { class:'card-more top', 'aria-live':'polite' },
+        h('span', { class:'card-more-btn' }, icon('chevronUp', 20), h('span'))),
       h('div', { class:'card-more', 'aria-live':'polite' },
-        h('span', { class:'card-more-btn' }, h('span')))),
+        h('span', { class:'card-more-btn' }, icon('chevronDown', 20), h('span')))),
 
     /* Footer */
     h('div', { class:'card-foot' },
