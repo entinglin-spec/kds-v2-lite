@@ -219,6 +219,8 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
 .divider-v{width:1px;height:32px;background:var(--border);flex-shrink:0;}
 .main-col{display:flex;flex-direction:column;flex:1;min-width:0;overflow:hidden;}   /* 側欄之外：分頁列 + 內容，側欄上下滿版 */
 .siderail{width:auto;background:var(--surface);border-right:2px solid var(--border);padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px;flex-shrink:0;overflow-y:auto;}
+.app.rail-right{flex-direction:row-reverse;}   /* 設定：側欄位置＝右側 */
+.app.rail-right .siderail{border-right:none;border-left:2px solid var(--border);}
 .toolbar{display:flex;flex-direction:column;gap:12px;align-items:center;}
 .content{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
 
@@ -522,6 +524,13 @@ button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inheri
   box-shadow:0 1px 3px var(--switch-knob-shadow);transition:left .18s ease-out;}
 .switch.on i{left:23px;}
 .modal-actions{display:flex;gap:12px;}
+.set-sep{height:2px;background:var(--divider-raised);flex-shrink:0;}
+.set-meta{color:var(--text-meta);font-weight:400;font-size:20px;}
+.set-input{background:var(--input-bg);border:2px solid var(--input-border);border-radius:var(--r-md);padding:14px;
+  font-family:inherit;font-size:20px;color:var(--text);width:100%;box-sizing:border-box;}
+.set-btns{display:flex;gap:12px;}
+.set-btns .btn{flex:1;font-size:20px;padding:14px;}
+.set-btns .btn:disabled{background:var(--disabled-bg);color:var(--disabled-fg);border-color:transparent;cursor:default;}
 .modal-actions .btn{font-size:20px;padding:14px;}
 .modal.reprint-dialog{width:360px;gap:12px;}
 .reprint-opt{background:none;border:none;border-radius:var(--r-md);padding:12px 4px;
@@ -591,6 +600,10 @@ const STR = {
     prevPage:'上一頁', nextPage:'下一頁',
     sortLabel:'訂單排序', sortAsc:'時間正序', sortDesc:'時間倒序',
     showOrderInfo:'訂單資訊顯示', notifyNewOrder:'通知提示', themeLabel:'顏色模式', themeLight:'淺色', themeDark:'深色',
+    railSideLabel:'側欄位置', railLeft:'左側', railRight:'右側',
+    themeSystem:'跟隨系統', deviceName:'設備名稱', deviceNameHint:'已對應商店整合設定 (KDS)，確定後套用品項過濾',
+    itemFilter:'品項過濾器', activeStore:'啟用商店', swUpdate:'軟體更新', checkUpdate:'檢查', doUpdate:'更新',
+    menuSettings:'菜單設定', stockLink:'庫存關聯', reportIssue:'問題回報', toastLatest:'已是最新版本', toastTodo:'原型未實作',
     sizeSmall:'小', sizeMedium:'中', sizeLarge:'大',
     paid:'已付款', unpaid:'未付款',
     // 通知 / 電量（PRD §2.3 Toolbar）
@@ -632,6 +645,10 @@ const STR = {
     prevPage:'Previous page', nextPage:'Next page',
     sortLabel:'Order sort', sortAsc:'Oldest first', sortDesc:'Newest first',
     showOrderInfo:'Show order info', notifyNewOrder:'New-order voice alert', themeLabel:'Color mode', themeLight:'Light', themeDark:'Dark',
+    railSideLabel:'Sidebar position', railLeft:'Left', railRight:'Right',
+    themeSystem:'System', deviceName:'Device name', deviceNameHint:'Linked to store integration (KDS); item filter applies on confirm',
+    itemFilter:'Item filter', activeStore:'Active store', swUpdate:'Software update', checkUpdate:'Check', doUpdate:'Update',
+    menuSettings:'Menu settings', stockLink:'Stock link', reportIssue:'Report issue', toastLatest:'Already up to date', toastTodo:'Not in prototype',
     sizeSmall:'S', sizeMedium:'M', sizeLarge:'L',
     paid:'Paid', unpaid:'Unpaid',
     // 通知 / 電量（PRD §2.3 Toolbar）
@@ -990,6 +1007,9 @@ const DEFAULT_SETTINGS = {
   hideCompletedItems: false,
   sort: 'asc',             // PRD §4 — 訂單排序，預設時間正序
   showOrderInfo: true,     // PRD §2.2 / §4 — 訂單資訊顯示開關，預設開
+  railSide: 'left',        // 側欄位置 left（預設）| right
+  deviceName: '廚房 KDS',
+  itemFilter: true,        // 品項過濾器
   notify: false,           // PRD §4 — 通知提示開關，預設關
 };
 
@@ -1959,8 +1979,8 @@ function renderSettingsModal() {
   if (!state.settingsOpen || !state.draft) return null;
   const s = state.draft.settings;
   const lang = state.draft.lang;      // 設定頁自身即時反映草稿語言
-  const field = (label, control) =>
-    h('label', { class:'field' }, h('span', { class:'f-label', text:label }), control);
+  const field = (label, control, extra) =>
+    h('label', { class:'field' }, h('span', { class:'f-label', text:label }), control, extra || null);
   const row = (label, control) =>
     h('div', { class:'row' }, h('span', { class:'f-label', text:label }), control);
 
@@ -1986,19 +2006,45 @@ function renderSettingsModal() {
          { value:'desc', label:t(lang, 'sortDesc') }],
         s.sort, v => setSetting('sort', v))),
 
+      field(t(lang, 'railSideLabel'), segControl(
+        [{ value:'left',  label:t(lang, 'railLeft') },
+         { value:'right', label:t(lang, 'railRight') }],
+        s.railSide, v => setSetting('railSide', v))),
+
       row(t(lang, 'showOrderInfo'),
         toggleSwitch(!!s.showOrderInfo, v => setSetting('showOrderInfo', v))),
 
       row(t(lang, 'mergeItems'),
         toggleSwitch(!!s.mergeItems, v => setSetting('mergeItems', v))),
 
-      row(t(lang, 'notifyNewOrder'),
-        toggleSwitch(!!s.notify, v => setSetting('notify', v))),
-
       field(t(lang, 'themeLabel'), segControl(
-        [{ value:'light', label:t(lang, 'themeLight') },
-         { value:'dark',  label:t(lang, 'themeDark') }],
+        [{ value:'light',  label:t(lang, 'themeLight') },
+         { value:'dark',   label:t(lang, 'themeDark') },
+         { value:'system', label:t(lang, 'themeSystem') }],
         s.theme, v => setSetting('theme', v))),
+
+      h('div', { class:'set-sep' }),
+
+      field(t(lang, 'deviceName'),
+        h('input', { class:'set-input', value:s.deviceName, 'data-fkey':'deviceName',
+          oninput:(e) => { state.draft.settings.deviceName = e.target.value; } }),
+        h('span', { class:'set-meta', text:t(lang, 'deviceNameHint') })),
+
+      row(t(lang, 'itemFilter'),
+        toggleSwitch(!!s.itemFilter, v => setSetting('itemFilter', v))),
+
+      row(t(lang, 'activeStore'), h('span', { class:'set-meta', text:'電小二東科店' })),
+
+      row(t(lang, 'swUpdate'), h('span', { class:'set-meta', text:'1.11.8595 (1118595)' })),
+      h('div', { class:'set-btns' },
+        h('button', { class:'btn gray', text:t(lang, 'checkUpdate'), onclick:() => pushToast(t(state.lang, 'toastLatest')) }),
+        h('button', { class:'btn gray', text:t(lang, 'doUpdate'), disabled:true })),
+
+      h('div', { class:'set-sep' }),
+
+      h('div', { class:'set-btns' },
+        ['menuSettings','stockLink','reportIssue'].map(k =>
+          h('button', { class:'btn gray', text:t(lang, k), onclick:() => pushToast(t(state.lang, 'toastTodo')) }))),
 
       // PRD 另有「啟用商店」「軟體更新」兩項，顯示規格待與 PM 確認後再加回
 
@@ -2229,7 +2275,7 @@ function renderSearchResult() {
 }
 
 function renderApp() {
-  return h('div', { class:'app' },
+  return h('div', { class:'app' + (state.settings.railSide === 'right' ? ' rail-right' : '') },
     renderSideRail(),
     h('div', { class:'main-col' },
       renderTopBar(),
@@ -2254,7 +2300,9 @@ function render() {
   const fkey = active && active.dataset ? active.dataset.fkey : null;
   const caret = (fkey && 'selectionStart' in active) ? active.selectionStart : null;
 
-  document.documentElement.setAttribute('data-theme', state.settings.theme);
+  const themePref = state.settings.theme;
+  document.documentElement.setAttribute('data-theme', themePref === 'system'
+    ? (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : themePref);
   const fsz = ITEM_FONT_SIZE[state.settings.itemFontSize] || ITEM_FONT_SIZE.m;
   document.documentElement.style.setProperty('--item-fs', fsz.item + 'px');
   document.documentElement.style.setProperty('--attr-fs', fsz.attr + 'px');
