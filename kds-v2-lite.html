@@ -592,8 +592,8 @@ const STR = {
     toastUndone:'已復原上一步', toastNoUndo:'沒有可復原的動作', toastRefreshed:'已重新整理', toastItemDone:'已完成',
     settingsTitle:'設定', fontScale:'品項文字大小', close:'關閉',
     noOrders:'暫無訂單',
-    searchTitle:'搜尋訂單', searchHint:'輸入訂單編號或電話號碼',
-    searchIdle:'輸入訂單編號或電話號碼後按「搜尋」', backToList:'返回清單',
+    searchTitle:'搜尋訂單', searchHint:'輸入訂單編號或完整電話號碼',
+    searchIdle:'輸入訂單編號或完整電話號碼後按「搜尋」', backToList:'返回清單',
     keyClear:'清除', keySearch:'搜尋',
     foundN:'找到 {n} 筆', noResult:'查無訂單',
     stateCooking:'製作中', stateReady:'待取餐', stateDone:'已完成', stateRefunded:'已退單',
@@ -1539,14 +1539,13 @@ function renderBattery() {
     h('span', { class:'bat-pct', text:pct + '%' }));
 }
 
-/* Toolbar 由上而下：搜尋 → 回上一步 → 重新整理 → 設定。
+/* Toolbar 由上而下：搜尋 → 回上一步 → 設定。
    電量為狀態顯示（非按鈕），固定在側欄最下方。                      */
 function renderSideRail() {
   return h('div', { class:'siderail' },
     h('div', { class:'toolbar' },
       iconButton('search', t(state.lang, 'searchTitle'), openSearch),
       iconButton('cornerUpLeft', t(state.lang, 'undoTitle'), handleUndo),
-      iconButton('refresh', t(state.lang, 'refreshTitle'), handleRefresh),
       iconButton('settings', t(state.lang, 'settingsTitle'), openSettings)),
     h('div', { class:'rail-bottom' }, renderPager(), h('div', { class:'rail-sep' }), renderBattery()));
 }
